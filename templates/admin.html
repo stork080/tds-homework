@@ -2,42 +2,209 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Dashboard — TDS Hub</title>
   <link rel="stylesheet" href="/static/style.css">
   <style>
-    .admin-wrap { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
-    .login-box { max-width: 400px; margin: 4rem auto; background: white; padding: 2rem; border-radius: 8px; border: 1px solid #ddd; }
-    .login-box input { margin-bottom: 1rem; }
-    .panel { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .panel h2 { margin-top: 0; }
-    .row { display: flex; gap: .5rem; align-items: flex-start; flex-wrap: wrap; }
-    .row > * { margin-bottom: .5rem; }
-    .row input, .row textarea, .row select { flex: 1; min-width: 150px; }
-    .row textarea { min-height: 60px; font-family: ui-monospace, monospace; font-size: .9rem; }
-    .btn-danger { background: #d73a49; }
-    .btn-secondary { background: #6a737d; }
-    .btn-small { padding: .25rem .6rem; font-size: .85rem; }
-    .msg { padding: .75rem; border-radius: 6px; margin-bottom: 1rem; display: none; }
-    .msg.ok { background: #d4f5d4; color: #1a5e1a; display: block; }
-    .msg.err { background: #ffd7d5; color: #8b1a1a; display: block; }
-    .item { border-left: 3px solid #0366d6; padding: .5rem .75rem; margin: .5rem 0; background: #fafbfc; border-radius: 4px; }
-    .item-head { display: flex; justify-content: space-between; align-items: center; }
-    .item-head strong { flex: 1; }
-    .hidden { display: none; }
-    table { width: 100%; border-collapse: collapse; }
-    td, th { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #eee; }
-    th { background: #f6f8fa; font-size: .85rem; }
+    :root {
+      --primary: #0366d6;
+      --primary-dark: #0250a3;
+      --danger: #d73a49;
+      --danger-dark: #b02735;
+      --secondary: #6a737d;
+      --secondary-dark: #545b62;
+      --success: #28a745;
+      --bg: #f6f8fa;
+      --border: #e1e4e8;
+      --text: #24292e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+    header {
+      background: linear-gradient(135deg, #24292e 0%, #404850 100%);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    header h1 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; gap: .5rem; }
+    header .actions { display: flex; gap: .5rem; }
+
+    .admin-wrap { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+
+    .login-box {
+      max-width: 420px; margin: 5rem auto;
+      background: white; padding: 2.5rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.08);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .login-box h2 { margin-top: 0; }
+    .login-box .lock { font-size: 3rem; margin-bottom: .5rem; }
+    .login-box input {
+      width: 100%; padding: .75rem 1rem; margin: 1rem 0;
+      border: 2px solid var(--border); border-radius: 8px;
+      font-size: 1rem; transition: border-color .15s;
+    }
+    .login-box input:focus { outline: none; border-color: var(--primary); }
+    .login-box button { width: 100%; padding: .75rem; font-size: 1rem; }
+
+    .panel {
+      background: white; border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .panel h2 {
+      margin: 0 0 1rem; font-size: 1.15rem;
+      display: flex; align-items: center; gap: .5rem;
+      border-bottom: 1px solid var(--border); padding-bottom: .75rem;
+    }
+    .panel h2 .count {
+      margin-left: auto; background: var(--bg);
+      padding: .15rem .6rem; border-radius: 20px;
+      font-size: .8rem; font-weight: normal; color: var(--secondary);
+    }
+
+    .row { display: flex; gap: .5rem; align-items: stretch; flex-wrap: wrap; margin-bottom: .75rem; }
+    .row input, .row select, .row textarea {
+      padding: .6rem .8rem; border: 1px solid var(--border);
+      border-radius: 6px; font-family: inherit; font-size: .95rem;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .row input:focus, .row select:focus, .row textarea:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(3,102,214,.1);
+    }
+    .row input, .row select { flex: 1; min-width: 130px; }
+    .row textarea { flex: 1 1 100%; min-height: 100px; font-family: ui-monospace, monospace; font-size: .9rem; }
+
+    button {
+      background: var(--primary); color: white; border: none;
+      padding: .6rem 1.1rem; border-radius: 6px; cursor: pointer;
+      font-size: .95rem; font-weight: 500;
+      transition: background .15s, transform .05s;
+      display: inline-flex; align-items: center; gap: .35rem;
+    }
+    button:hover:not(:disabled) { background: var(--primary-dark); }
+    button:active:not(:disabled) { transform: scale(.97); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+
+    button.btn-danger { background: var(--danger); }
+    button.btn-danger:hover:not(:disabled) { background: var(--danger-dark); }
+    button.btn-secondary { background: var(--secondary); }
+    button.btn-secondary:hover:not(:disabled) { background: var(--secondary-dark); }
+    button.btn-success { background: var(--success); }
+    button.btn-success:hover:not(:disabled) { background: #1e7e34; }
+    button.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    button.btn-ghost:hover:not(:disabled) { background: var(--bg); }
+    button.btn-small { padding: .3rem .7rem; font-size: .82rem; }
+
+    .item {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 1rem; margin: .5rem 0;
+      background: var(--bg); border-left: 3px solid var(--primary);
+      border-radius: 6px;
+      transition: background .15s, transform .1s;
+    }
+    .item:hover { background: #eef1f4; transform: translateX(2px); }
+    .item.is-project { border-left-color: #f59e0b; }
+    .item .item-info { flex: 1; min-width: 0; }
+    .item .item-title { font-weight: 600; margin-bottom: .15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item .item-sub { font-size: .82rem; color: var(--secondary); }
+    .item .item-actions { display: flex; gap: .4rem; flex-shrink: 0; }
+
+    .empty-state {
+      text-align: center; padding: 2rem 1rem;
+      color: var(--secondary); font-style: italic;
+      border: 2px dashed var(--border); border-radius: 8px;
+    }
+
+    .msg {
+      padding: .85rem 1rem; border-radius: 8px; margin-bottom: 1rem;
+      display: none; font-weight: 500;
+      animation: slideDown .25s ease;
+    }
+    .msg.ok { background: #d4f5d4; color: #155724; border-left: 4px solid var(--success); display: block; }
+    .msg.err { background: #ffe0e0; color: #8b1a1a; border-left: 4px solid var(--danger); display: block; }
+    @keyframes slideDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .hidden { display: none !important; }
+
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .confirm-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; animation: fadeIn .15s;
+    }
+    .confirm-box {
+      background: white; padding: 2rem; border-radius: 12px;
+      max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,.2);
+      animation: scaleIn .2s;
+    }
+    .confirm-box h3 { margin-top: 0; }
+    .confirm-box p { color: var(--secondary); margin-bottom: 1.5rem; }
+    .confirm-box .buttons { display: flex; gap: .5rem; justify-content: flex-end; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .kbd-hint {
+      font-size: .78rem; color: var(--secondary);
+      display: flex; align-items: center; gap: .3rem;
+      margin-top: .25rem;
+    }
+    .kbd-hint kbd {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: .05rem .4rem; border-radius: 4px;
+      font-family: ui-monospace, monospace; font-size: .75rem;
+    }
+
+    .badge {
+      display: inline-block; padding: .15rem .5rem;
+      border-radius: 12px; font-size: .72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .3px;
+    }
+    .badge-week { background: #dbeafe; color: #1e40af; }
+    .badge-project { background: #fef3c7; color: #92400e; }
+
+    @media (max-width: 640px) {
+      header { padding: 1rem; }
+      header h1 { font-size: 1.1rem; }
+      .row { flex-direction: column; }
+      .item { flex-direction: column; align-items: stretch; }
+      .item .item-actions { justify-content: flex-end; }
+    }
   </style>
 </head>
 <body>
-  <header><h1>🛠️ Admin Dashboard</h1></header>
+  <header>
+    <h1>🛠️ Admin Dashboard</h1>
+    <div class="actions">
+      <a href="/" style="color:white; text-decoration:none; padding:.4rem .8rem; border:1px solid rgba(255,255,255,.3); border-radius:6px; font-size:.9rem;">🏠 Home</a>
+      <button id="logout-btn" class="btn-secondary btn-small hidden" onclick="logout()">🚪 Logout</button>
+    </div>
+  </header>
 
   <!-- Login screen -->
   <div id="login-screen" class="login-box">
-    <h2>Enter Admin Key</h2>
-    <input id="admin-key-input" type="password" placeholder="Admin key" autocomplete="off">
-    <button onclick="login()">Login</button>
-    <p id="login-error" style="color:#d73a49; display:none;">Invalid key.</p>
+    <div class="lock">🔒</div>
+    <h2>Admin Access</h2>
+    <p style="color:#6a737d; font-size:.9rem;">Enter your admin key to manage content.</p>
+    <input id="admin-key-input" type="password" placeholder="Admin key" autocomplete="off" autofocus>
+    <button onclick="login()" id="login-btn">🔓 Login</button>
+    <p id="login-error" style="color:#d73a49; display:none; margin-top:1rem;">Invalid key. Try again.</p>
   </div>
 
   <!-- Main dashboard -->
@@ -46,47 +213,57 @@
 
     <!-- Weeks panel -->
     <div class="panel">
-      <h2>📅 Weeks & Projects</h2>
+      <h2>📅 Weeks & Projects <span class="count" id="week-count">0</span></h2>
       <div class="row">
-        <input id="week-name" placeholder="Week name (e.g. Week 1)">
-        <input id="week-order" type="number" placeholder="Order" style="max-width:100px;">
-        <select id="week-project">
-          <option value="false">Week</option>
-          <option value="true">Project</option>
+        <input id="week-name" placeholder="Week name (e.g. Week 1)" onkeydown="if(event.key==='Enter')createWeek()">
+        <input id="week-order" type="number" placeholder="Order" style="max-width:110px;">
+        <select id="week-project" style="max-width:130px;">
+          <option value="false">📅 Week</option>
+          <option value="true">📦 Project</option>
         </select>
-        <button onclick="createWeek()">+ Add</button>
+        <button onclick="createWeek(this)" id="add-week-btn">➕ Add</button>
       </div>
-      <div id="week-list"></div>
+      <div class="kbd-hint">💡 Press <kbd>Enter</kbd> in the name field to add quickly</div>
+      <div id="week-list" style="margin-top:1rem;"></div>
     </div>
 
     <!-- Questions panel -->
     <div class="panel">
-      <h2>❓ Questions</h2>
+      <h2>❓ Questions <span class="count" id="question-count">0</span></h2>
       <div class="row">
-        <select id="q-week" onchange="loadQuestions()"></select>
+        <select id="q-week" onchange="loadQuestions()" style="max-width:300px;"></select>
       </div>
       <div class="row">
-        <input id="q-title" placeholder="Question title">
-        <input id="q-order" type="number" placeholder="Order" style="max-width:100px;">
-        <button onclick="createQuestion()">+ Add</button>
+        <input id="q-title" placeholder="Question title" onkeydown="if(event.key==='Enter')createQuestion()">
+        <input id="q-order" type="number" placeholder="Order" style="max-width:110px;">
+        <button onclick="createQuestion(this)" id="add-q-btn">➕ Add</button>
       </div>
-      <div id="question-list"></div>
+      <div id="question-list" style="margin-top:1rem;"></div>
     </div>
 
-    <!-- Full theory & conclusion editor -->
+    <!-- Theory editor -->
     <div class="panel">
       <h2>📖 Edit Theory & Conclusion</h2>
       <div class="row">
-        <select id="edit-q-select" onchange="loadQuestionForEdit()"></select>
+        <select id="edit-q-select" onchange="loadQuestionForEdit()" style="max-width:400px;">
+          <option value="">-- Select a question --</option>
+        </select>
       </div>
-      <div id="edit-area" class="hidden">
-        <p><strong>Title:</strong></p>
-        <input id="edit-title" style="width:100%;">
-        <p><strong>Full Theory:</strong></p>
-        <textarea id="edit-theory" style="width:100%; min-height:120px;"></textarea>
-        <p><strong>Conclusion:</strong></p>
-        <textarea id="edit-conclusion" style="width:100%; min-height:100px;"></textarea>
-        <button onclick="saveQuestionEdit()">💾 Save</button>
+      <div id="edit-area" class="hidden" style="margin-top:1rem;">
+        <div class="row">
+          <input id="edit-title" placeholder="Question title" style="width:100%;">
+        </div>
+        <div class="row">
+          <textarea id="edit-theory" placeholder="Full prerequisite theory..."></textarea>
+        </div>
+        <div class="row">
+          <textarea id="edit-conclusion" placeholder="Conclusion / takeaways..."></textarea>
+        </div>
+        <div class="row">
+          <button onclick="saveQuestionEdit(this)" class="btn-success" id="save-edit-btn">💾 Save Changes</button>
+          <button onclick="loadQuestionForEdit()" class="btn-ghost">↺ Reset</button>
+        </div>
+        <div class="kbd-hint">💡 <kbd>Ctrl</kbd>+<kbd>S</kbd> to save</div>
       </div>
     </div>
   </div>
@@ -94,20 +271,32 @@
   <script>
     let ADMIN_KEY = sessionStorage.getItem('admin_key') || '';
     let allWeeks = [];
-    let allQuestionsByWeek = {};
 
     // ---------- Helpers ----------
-    function $(id) { return document.getElementById(id); }
+    const $ = id => document.getElementById(id);
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 
     function showMsg(text, ok = true) {
       const el = $('msg');
       el.textContent = text;
       el.className = 'msg ' + (ok ? 'ok' : 'err');
-      setTimeout(() => { el.style.display = 'none'; }, 4000);
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => { el.style.display = 'none'; }, 3500);
     }
 
-    function escapeHtml(s) {
-      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    function setLoading(btn, loading) {
+      if (!btn) return;
+      if (loading) {
+        btn._original = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner"></span> Working...';
+        btn.disabled = true;
+      } else {
+        btn.innerHTML = btn._original || btn.innerHTML;
+        btn.disabled = false;
+      }
     }
 
     async function api(path, opts = {}) {
@@ -119,132 +308,233 @@
       }
       const res = await fetch(path, opts);
       if (res.status === 403) {
-        sessionStorage.removeItem('admin_key');
-        location.reload();
+        logout();
         throw new Error('Unauthorized');
       }
       return res;
     }
 
-    // ---------- Login ----------
+    // ---------- Confirm dialog (replaces window.confirm) ----------
+    function confirmDialog(title, message) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
+          <div class="confirm-box">
+            <h3>${title}</h3>
+            <p>${message}</p>
+            <div class="buttons">
+              <button class="btn-ghost" id="cf-no">Cancel</button>
+              <button class="btn-danger" id="cf-yes">Confirm</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#cf-yes').onclick = () => { overlay.remove(); resolve(true); };
+        overlay.querySelector('#cf-no').onclick = () => { overlay.remove(); resolve(false); };
+        overlay.onclick = e => { if (e.target === overlay) { overlay.remove(); resolve(false); } };
+      });
+    }
+
+    // ---------- Auth ----------
     async function login() {
       const key = $('admin-key-input').value.trim();
       if (!key) return;
-      const res = await fetch('/api/admin/verify', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({key})
-      });
-      if (res.ok) {
-        ADMIN_KEY = key;
-        sessionStorage.setItem('admin_key', key);
-        $('login-screen').classList.add('hidden');
-        $('dashboard').classList.remove('hidden');
-        await initDashboard();
-      } else {
-        $('login-error').style.display = 'block';
+      setLoading($('login-btn'), true);
+      try {
+        const res = await fetch('/api/admin/verify', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({key})
+        });
+        if (res.ok) {
+          ADMIN_KEY = key;
+          sessionStorage.setItem('admin_key', key);
+          $('login-error').style.display = 'none';
+          await enterDashboard();
+        } else {
+          $('login-error').style.display = 'block';
+        }
+      } finally {
+        setLoading($('login-btn'), false);
       }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('admin_key');
+      ADMIN_KEY = '';
+      $('dashboard').classList.add('hidden');
+      $('login-screen').classList.remove('hidden');
+      $('logout-btn').classList.add('hidden');
+      $('admin-key-input').value = '';
+    }
+
+    async function enterDashboard() {
+      $('login-screen').classList.add('hidden');
+      $('dashboard').classList.remove('hidden');
+      $('logout-btn').classList.remove('hidden');
+      await loadWeeks();
     }
 
     // ---------- Weeks ----------
     async function loadWeeks() {
       const res = await fetch('/api/weeks');
       allWeeks = await res.json();
+      $('week-count').textContent = allWeeks.length;
+
       const list = $('week-list');
       list.innerHTML = '';
       if (!allWeeks.length) {
-        list.innerHTML = '<p><em>No weeks yet.</em></p>';
+        list.innerHTML = '<div class="empty-state">No weeks yet. Add your first one above 👆</div>';
+      } else {
+        allWeeks.forEach(w => {
+          const div = document.createElement('div');
+          div.className = 'item' + (w.is_project ? ' is-project' : '');
+          div.innerHTML = `
+            <div class="item-info">
+              <div class="item-title">
+                ${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)}
+              </div>
+              <div class="item-sub">
+                <span class="badge ${w.is_project ? 'badge-project' : 'badge-week'}">${w.is_project ? 'Project' : 'Week'}</span>
+                &nbsp;·&nbsp; ${w.question_count} question${w.question_count === 1 ? '' : 's'}
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="btn-danger btn-small" onclick="deleteWeek(${w.id}, this)">🗑️ Delete</button>
+            </div>`;
+          list.appendChild(div);
+        });
       }
-      allWeeks.forEach(w => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-          <div class="item-head">
-            <strong>${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)}</strong>
-            <span style="color:#666; font-size:.85rem;">${w.question_count} questions</span>
-            <button class="btn-danger btn-small" onclick="deleteWeek(${w.id})">🗑️ Delete</button>
-          </div>`;
-        list.appendChild(div);
-      });
-      // Refresh selects
-      $('q-week').innerHTML = allWeeks.map(w =>
-        `<option value="${w.id}">${escapeHtml(w.name)}</option>`).join('');
-      $('edit-q-select').innerHTML = '';
+
+      // Refresh dropdowns
+      const opts = allWeeks.map(w => `<option value="${w.id}">${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)}</option>`).join('');
+      $('q-week').innerHTML = opts || '<option value="">— no weeks yet —</option>';
       await loadQuestions();
     }
 
-    async function createWeek() {
+    async function createWeek(btn) {
       const name = $('week-name').value.trim();
       const order = parseInt($('week-order').value) || 0;
       const is_project = $('week-project').value === 'true';
       if (!name) return showMsg('Name required', false);
-      const res = await api('/api/admin/week', {
-        method: 'POST',
-        body: {name, order, is_project}
-      });
-      if (res.ok) {
-        $('week-name').value = '';
-        $('week-order').value = '';
-        showMsg('Week created');
-        await loadWeeks();
-      } else showMsg('Failed to create week', false);
+      setLoading(btn, true);
+      try {
+        const res = await api('/api/admin/week', {
+          method: 'POST',
+          body: {name, order, is_project}
+        });
+        if (res.ok) {
+          $('week-name').value = '';
+          $('week-order').value = '';
+          showMsg(`✅ ${is_project ? 'Project' : 'Week'} "${name}" created`);
+          await loadWeeks();
+        } else showMsg('Failed to create', false);
+      } finally {
+        setLoading(btn, false);
+      }
     }
 
-    async function deleteWeek(id) {
-      if (!confirm('Delete this week and all its questions?')) return;
-      const res = await api('/api/admin/week/' + id, {method: 'DELETE'});
-      if (res.ok) { showMsg('Week deleted'); await loadWeeks(); }
-      else showMsg('Failed to delete', false);
+    async function deleteWeek(id, btn) {
+      const w = allWeeks.find(x => x.id === id);
+      const ok = await confirmDialog('Delete this ' + (w?.is_project ? 'project' : 'week') + '?',
+        `"${w?.name || ''}" and all its ${w?.question_count || 0} questions will be permanently removed. This cannot be undone.`);
+      if (!ok) return;
+      setLoading(btn, true);
+      try {
+        const res = await api('/api/admin/week/' + id, {method: 'DELETE'});
+        if (res.ok) { showMsg('🗑️ Deleted'); await loadWeeks(); }
+        else showMsg('Delete failed', false);
+      } finally {
+        setLoading(btn, false);
+      }
     }
 
     // ---------- Questions ----------
     async function loadQuestions() {
       const weekId = parseInt($('q-week').value);
-      if (!weekId) { $('question-list').innerHTML = ''; return; }
+      const list = $('question-list');
+      if (!weekId) {
+        list.innerHTML = '';
+        $('question-count').textContent = '0';
+        $('edit-q-select').innerHTML = '<option value="">-- Select a question --</option>';
+        return;
+      }
       const res = await fetch('/api/weeks/' + weekId);
       const data = await res.json();
-      const list = $('question-list');
+      $('question-count').textContent = data.questions.length;
+
       list.innerHTML = '';
       if (!data.questions.length) {
-        list.innerHTML = '<p><em>No questions yet.</em></p>';
+        list.innerHTML = '<div class="empty-state">No questions in this week yet.</div>';
+      } else {
+        data.questions.forEach((q, i) => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.innerHTML = `
+            <div class="item-info">
+              <div class="item-title">${i + 1}. ${escapeHtml(q.title)}</div>
+            </div>
+            <div class="item-actions">
+              <a href="/question/${q.id}" target="_blank" style="background:var(--secondary);color:white;text-decoration:none;padding:.3rem .7rem;border-radius:6px;font-size:.82rem;">👁️ View</a>
+              <button class="btn-danger btn-small" onclick="deleteQuestion(${q.id}, this)">🗑️</button>
+            </div>`;
+          list.appendChild(div);
+        });
       }
-      data.questions.forEach(q => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-          <div class="item-head">
-            <strong>${escapeHtml(q.title)}</strong>
-            <a href="/question/${q.id}" target="_blank" class="btn-small" style="background:#6a737d;color:white;text-decoration:none;padding:.25rem .6rem;border-radius:4px;">View</a>
-          </div>`;
-        list.appendChild(div);
-      });
-      // Populate edit select
-      const sel = $('edit-q-select');
-      sel.innerHTML = '<option value="">-- Select question --</option>' +
-        data.questions.map(q => `<option value="${q.id}">${escapeHtml(q.title)}</option>`).join('');
+      // Populate edit select (across all weeks, not just current)
+      await populateEditSelect();
     }
 
-    async function createQuestion() {
+    async function populateEditSelect() {
+      // Fetch every week's questions
+      const opts = [];
+      for (const w of allWeeks) {
+        const r = await fetch('/api/weeks/' + w.id);
+        const d = await r.json();
+        d.questions.forEach(q => {
+          opts.push(`<option value="${q.id}">${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)} → ${escapeHtml(q.title)}</option>`);
+        });
+      }
+      $('edit-q-select').innerHTML = '<option value="">-- Select a question --</option>' + opts.join('');
+    }
+
+    async function createQuestion(btn) {
       const weekId = parseInt($('q-week').value);
       const title = $('q-title').value.trim();
       const order = parseInt($('q-order').value) || 0;
       if (!weekId) return showMsg('Select a week first', false);
       if (!title) return showMsg('Title required', false);
-      const res = await api('/api/admin/question', {
-        method: 'POST',
-        body: {week_id: weekId, title, order}
-      });
-      if (res.ok) {
-        $('q-title').value = '';
-        $('q-order').value = '';
-        showMsg('Question created');
-        await loadWeeks();
-        // Restore selected week
-        $('q-week').value = weekId;
-        await loadQuestions();
-      } else showMsg('Failed to create', false);
+      setLoading(btn, true);
+      try {
+        const res = await api('/api/admin/question', {
+          method: 'POST',
+          body: {week_id: weekId, title, order}
+        });
+        if (res.ok) {
+          $('q-title').value = '';
+          $('q-order').value = '';
+          showMsg(`✅ Question "${title}" created`);
+          await loadQuestions();
+        } else showMsg('Failed to create', false);
+      } finally {
+        setLoading(btn, false);
+      }
     }
 
+    async function deleteQuestion(qid, btn) {
+      const ok = await confirmDialog('Delete this question?', 'All its solutions and votes will also be removed.');
+      if (!ok) return;
+      setLoading(btn, true);
+      try {
+        const res = await api('/api/admin/question/' + qid, {method: 'DELETE'});
+        if (res.ok) { showMsg('🗑️ Question deleted'); await loadQuestions(); }
+        else showMsg('Delete failed', false);
+      } finally {
+        setLoading(btn, false);
+      }
+    }
+
+    // ---------- Theory editor ----------
     async function loadQuestionForEdit() {
       const qid = $('edit-q-select').value;
       if (!qid) { $('edit-area').classList.add('hidden'); return; }
@@ -256,31 +546,41 @@
       $('edit-conclusion').value = q.conclusion || '';
     }
 
-    async function saveQuestionEdit() {
+    async function saveQuestionEdit(btn) {
       const qid = $('edit-q-select').value;
       if (!qid) return;
-      const res = await api('/api/admin/question/' + qid, {
-        method: 'PUT',
-        body: {
-          title: $('edit-title').value,
-          full_theory: $('edit-theory').value,
-          conclusion: $('edit-conclusion').value
-        }
-      });
-      if (res.ok) showMsg('Saved');
-      else showMsg('Save failed', false);
+      setLoading(btn, true);
+      try {
+        const res = await api('/api/admin/question/' + qid, {
+          method: 'PUT',
+          body: {
+            title: $('edit-title').value,
+            full_theory: $('edit-theory').value,
+            conclusion: $('edit-conclusion').value
+          }
+        });
+        if (res.ok) showMsg('💾 Saved successfully');
+        else showMsg('Save failed', false);
+      } finally {
+        setLoading(btn, false);
+      }
     }
 
-    // ---------- Init ----------
-    async function initDashboard() {
-      await loadWeeks();
-    }
+    // ---------- Keyboard shortcuts ----------
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (!$('edit-area').classList.contains('hidden')) saveQuestionEdit($('save-edit-btn'));
+      }
+      if (e.key === 'Escape') {
+        const overlay = document.querySelector('.confirm-overlay');
+        if (overlay) overlay.remove();
+      }
+    });
 
-    // Auto-login if key exists in session
+    // ---------- Auto-login ----------
     if (ADMIN_KEY) {
-      $('login-screen').classList.add('hidden');
-      $('dashboard').classList.remove('hidden');
-      initDashboard();
+      enterDashboard();
     }
   </script>
 </body>

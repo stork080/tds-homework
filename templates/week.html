@@ -8,34 +8,33 @@
 </head>
 <body>
   <header>
-    <a href="/" style="color:#c9d1d9; text-decoration:none; font-size:.95rem;">← Back to Home</a>
+    <a href="/" style="color:#c9d1d9; text-decoration:none; font-weight:600;">← Back to Home</a>
     <nav><a href="/admin">🛠️ Admin</a></nav>
   </header>
-  <main>
-    <h1 id="week-title">Loading...</h1>
-    <ul id="q-list" class="card-list"></ul>
+  <main style="max-width: 800px;">
+    <h1 id="week-title" style="text-align: center; margin-bottom: 2rem;">Loading...</h1>
+    <div id="q-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
   </main>
   <script>
     const weekId = {{ week_id }};
     fetch('/api/weeks/' + weekId).then(r => r.json()).then(w => {
-      document.getElementById('week-title').textContent = (w.name.startsWith('Project') ? '📦 ' : '📅 ') + w.name;
-      const ul = document.getElementById('q-list');
+      document.getElementById('week-title').textContent = w.name;
+      const list = document.getElementById('q-list');
+      
       if (!w.questions.length) {
-        ul.innerHTML = '<li class="empty">No questions in this week yet.</li>';
+        list.innerHTML = '<p style="text-align:center; color:#8b949e;">No questions in this week yet.</p>';
         return;
       }
+
       w.questions.forEach((q, i) => {
-        const li = document.createElement('li');
-        li.className = 'q-card';
-        li.style.gridColumn = '1 / -1';
-        li.innerHTML = `
-          <span class="q-icon">❓</span>
-          <div class="q-text">
-            <div class="q-title">${i + 1}. ${q.title}</div>
-            <div class="q-sub">Click to view solutions →</div>
-          </div>`;
-        li.onclick = () => location.href = '/question/' + q.id;
-        ul.appendChild(li);
+        const btn = document.createElement('a');
+        btn.href = '/question/' + q.id;
+        btn.className = 'btn-3d';
+        btn.innerHTML = `
+          <span><span class="q-num">Q${i+1}</span> ${q.title}</span>
+          <span style="color:#58a6ff; font-size:1.5rem;">→</span>
+        `;
+        list.appendChild(btn);
       });
     });
   </script>

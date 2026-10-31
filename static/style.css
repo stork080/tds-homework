@@ -1,0 +1,23 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #f6f8fa; color: #222; }
+header { background: #24292e; color: white; padding: 1rem 2rem; }
+header a { color: #9be9ff; text-decoration: none; }
+main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+h1, h2 { margin-top: 1.5rem; }
+.card-list { list-style: none; padding: 0; display: grid; gap: 0.75rem; }
+.card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; transition: .15s; }
+.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.card a { color: #0366d6; text-decoration: none; display: block; }
+.tabs { display: flex; gap: .5rem; margin: 1rem 0; }
+.tab { padding: .6rem 1rem; border: 1px solid #ccc; background: white; border-radius: 6px; cursor: pointer; }
+.tab.active { background: #0366d6; color: white; border-color: #0366d6; }
+.tab-panel { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
+.hidden { display: none; }
+.solution { border-left: 4px solid #0366d6; padding: .75rem 1rem; margin: .75rem 0; background: #fafbfc; border-radius: 4px; }
+.sol-head { font-size: .9rem; color: #555; margin-bottom: .3rem; }
+pre { white-space: pre-wrap; font-family: ui-monospace, monospace; margin: .5rem 0; }
+input, textarea { width: 100%; padding: .6rem; margin: .4rem 0; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
+textarea { min-height: 90px; }
+button { background: #0366d6; color: white; border: none; padding: .5rem 1rem; border-radius: 6px; cursor: pointer; }
+button:disabled { background: #6c8ebf; cursor: default; }
+.prose { white-space: pre-wrap; line-height: 1.6; background: #fafbfc; padding: 1rem; border-radius: 6px; }

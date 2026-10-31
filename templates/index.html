@@ -4,55 +4,329 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TDS Assignment Hub</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    :root {
+      --primary: #0366d6;
+      --primary-dark: #0250a3;
+      --bg: #0d1117;
+      --panel-bg: #161b22;
+      --border: rgba(255,255,255,.08);
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ===== HEADER ===== */
+    header {
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      color: #fff;
+      font-weight: 700;
+    }
+    header nav { display: flex; gap: .5rem; }
+    header nav a {
+      color: #c9d1d9;
+      padding: .45rem 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: .9rem;
+      font-weight: 500;
+      transition: all .2s ease;
+    }
+    header nav a:hover {
+      background: rgba(88,166,255,.15);
+      border-color: #58a6ff;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* ===== MAIN WRAPPER ===== */
+    .admin-wrap {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem 4rem;
+    }
+
+    /* ===== PANELS ===== */
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      animation: fadeUp .4s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: .75rem;
+      color: #fff;
+    }
+    .panel h2 .count {
+      margin-left: auto;
+      background: var(--bg);
+      padding: .15rem .6rem;
+      border-radius: 20px;
+      font-size: .8rem;
+      font-weight: normal;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* ===== ITEM LISTS (Exactly like Admin) ===== */
+    #week-list, #project-list {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg);
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      transition: all .2s ease;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+    }
+    .item:hover {
+      background: #1c2128;
+      transform: translateX(4px);
+      border-color: #58a6ff;
+      box-shadow: 0 4px 12px rgba(88,166,255,.1);
+    }
+    .item.is-project {
+      border-left-color: #f59e0b;
+    }
+    .item.is-project:hover {
+      border-color: #f59e0b;
+      box-shadow: 0 4px 12px rgba(245,158,11,.1);
+    }
+
+    /* The big icon inside the row */
+    .item .gear-icon {
+      width: 50px;
+      height: 50px;
+      background: #21262d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #58a6ff;
+      flex-shrink: 0;
+      transition: all .3s ease;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,.3);
+    }
+    .item.is-project .gear-icon {
+      color: #f59e0b;
+    }
+    .item:hover .gear-icon {
+      transform: scale(1.15) rotate(10deg);
+      background: #2d333b;
+    }
+
+    .item .item-info { flex: 1; min-width: 0; }
+    .item .item-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin-bottom: .2rem;
+      color: #fff;
+    }
+    .item .item-sub {
+      font-size: .82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .item .item-actions {
+      display: flex;
+      gap: .5rem;
+      flex-shrink: 0;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: .5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .9rem;
+      font-weight: 500;
+      transition: background .15s, transform .05s;
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+    }
+    .btn:hover { background: var(--primary-dark); }
+    .btn-secondary {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #30363d; color: #fff; }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: .1rem .5rem;
+      border-radius: 12px;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+    .badge-week { background: rgba(3,102,214,.15); color: #58a6ff; }
+    .badge-project { background: rgba(245,158,11,.15); color: #f59e0b; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-style: italic;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,.02);
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 1rem; }
+      header h1 { font-size: 1.2rem; }
+      .item { flex-direction: row; padding: .8rem; gap: .75rem; }
+      .item .gear-icon { width: 40px; height: 40px; font-size: 1rem; }
+      .item .item-actions { display: none; } /* Hide arrow button on mobile, whole row is clickable */
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>⚙️ TDS Hub</h1>
+    <h1>📚 TDS Assignment Hub</h1>
     <nav>
       <a href="/">🏠 Home</a>
       <a href="/admin">🛠️ Admin</a>
     </nav>
   </header>
-  <main>
-    <h2>Weeks</h2>
-    <div id="week-list" class="week-grid"></div>
 
-    <h2>Projects</h2>
-    <div id="project-list" class="week-grid"></div>
-  </main>
+  <div class="admin-wrap">
+    <!-- Weeks Panel -->
+    <div class="panel">
+      <h2>📅 Weeks <span class="count" id="week-count">0</span></h2>
+      <div id="week-list">
+        <div class="empty-state">Loading weeks...</div>
+      </div>
+    </div>
+
+    <!-- Projects Panel -->
+    <div class="panel">
+      <h2>📦 Projects <span class="count" id="project-count">0</span></h2>
+      <div id="project-list">
+        <div class="empty-state">Loading projects...</div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    fetch('/api/weeks').then(r => r.json()).then(weeks => {
-      const wk = document.getElementById('week-list');
-      const pr = document.getElementById('project-list');
-      
-      if (!weeks.length) {
-        wk.innerHTML = '<p style="color:#8b949e">No weeks added yet.</p>';
-        return;
-      }
+    function escapeHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 
-      weeks.forEach(w => {
-        const div = document.createElement('a');
-        div.href = '/week/' + w.id;
-        div.className = 'week-card' + (w.is_project ? ' is-project' : '');
-        
-        // Extract number for icon (e.g., "Week 4" -> "4", "Project 1" -> "P1")
-        let iconText = '⚙️';
-        if (w.name.toLowerCase().includes('week')) {
-          const num = w.name.match(/\d+/);
-          if (num) iconText = num[0];
-        } else if (w.name.toLowerCase().includes('project')) {
-          const num = w.name.match(/\d+/);
-          iconText = num ? 'P' + num[0] : '📦';
+    fetch('/api/weeks').then(r => r.json()).then(weeks => {
+      const wkList = document.getElementById('week-list');
+      const prList = document.getElementById('project-list');
+      const wCount = document.getElementById('week-count');
+      const pCount = document.getElementById('project-count');
+
+      const weeksArr = weeks.filter(w => !w.is_project);
+      const projsArr = weeks.filter(w => w.is_project);
+
+      wCount.textContent = weeksArr.length;
+      pCount.textContent = projsArr.length;
+
+      function renderList(arr, container, isProject) {
+        container.innerHTML = '';
+        if (!arr.length) {
+          container.innerHTML = `<div class="empty-state">No ${isProject ? 'projects' : 'weeks'} added yet.</div>`;
+          return;
         }
 
-        div.innerHTML = `
-          <div class="week-gear-icon">${iconText}</div>
-          <div class="week-title">${w.name}</div>
-          <div class="week-subtitle">${w.question_count} Questions</div>
-        `;
-        (w.is_project ? pr : wk).appendChild(div);
-      });
+        arr.forEach(w => {
+          // Extract number for the icon
+          let iconText = '⚙️';
+          const numMatch = w.name.match(/\d+/);
+          if (numMatch) {
+            iconText = isProject ? 'P' + numMatch[0] : numMatch[0];
+          } else if (isProject) {
+            iconText = '📦';
+          }
+
+          const div = document.createElement('div');
+          div.className = 'item' + (isProject ? ' is-project' : '');
+          div.onclick = () => location.href = '/week/' + w.id;
+          
+          div.innerHTML = `
+            <div class="gear-icon">${iconText}</div>
+            <div class="item-info">
+              <div class="item-title">${escapeHtml(w.name)}</div>
+              <div class="item-sub">
+                <span class="badge ${isProject ? 'badge-project' : 'badge-week'}">${isProject ? 'Project' : 'Week'}</span>
+                ${w.question_count} question${w.question_count === 1 ? '' : 's'}
+              </div>
+            </div>
+            <div class="item-actions">
+              <span class="btn btn-secondary" style="padding:.4rem .8rem; font-size:.85rem;">View →</span>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
+
+      renderList(weeksArr, wkList, false);
+      renderList(projsArr, prList, true);
+    }).catch(err => {
+      document.getElementById('week-list').innerHTML = '<div class="empty-state">Error loading data.</div>';
+      document.getElementById('project-list').innerHTML = '';
     });
   </script>
 </body>

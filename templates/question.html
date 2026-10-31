@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Question</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header><a href="/">← Home</a></header>
+  <main>
+    <h1 id="q-title">Loading...</h1>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="steps">🪜 Steps</button>
+      <button class="tab" data-tab="short_theory">📘 Short Theory</button>
+      <button class="tab" data-tab="full">📖 Full Theory</button>
+    </div>
+
+    <section id="tab-steps" class="tab-panel">
+      <div id="steps-list"></div>
+      <h3>Add a solution</h3>
+      <input id="steps-name" placeholder="Your name (optional)">
+      <textarea id="steps-content" placeholder="Write steps..."></textarea>
+      <button onclick="submitSolution('steps')">Submit</button>
+    </section>
+
+    <section id="tab-short_theory" class="tab-panel hidden">
+      <div id="short-list"></div>
+      <h3>Add a short theory</h3>
+      <input id="short-name" placeholder="Your name (optional)">
+      <textarea id="short-content" placeholder="Write concise theory..."></textarea>
+      <button onclick="submitSolution('short_theory')">Submit</button>
+    </section>
+
+    <section id="tab-full" class="tab-panel hidden">
+      <h2>Full Prerequisite Theory</h2>
+      <div id="full-theory" class="prose"></div>
+      <h2>Conclusion</h2>
+      <div id="conclusion" class="prose"></div>
+    </section>
+  </main>
+  <script>
+    const qid = {{ qid }};
+    const voterId = (() => {
+      let id = localStorage.getItem('voter_id');
+      if (!id) { id = crypto.randomUUID(); localStorage.setItem('voter_id', id); }
+      return id;
+    })();
+
+    fetch('/api/questions/' + qid).then(r => r.json()).then(q => {
+      document.getElementById('q-title').textContent = q.title;
+      document.getElementById('full-theory').textContent = q.full_theory || '(not yet added)';
+      document.getElementById('conclusion').textContent = q.conclusion || '(not yet added)';
+    });
+
+    function loadSolutions(type) {
+      fetch(`/api/solutions/${qid}?type=${type}`).then(r => r.json()).then(list => {
+        const box = document.getElementById(type === 'steps' ? 'steps-list' : 'short-list');
+        box.innerHTML = '';
+        if (!list.length) { box.innerHTML = '<p><em>No solutions yet. Be the first!</em></p>'; return; }
+        list.forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'solution';
+          div.innerHTML = `
+            <div class="sol-head"><strong>${s.user_name}</strong> · ${s.votes} 👍</div>
+            <pre>${escapeHtml(s.content)}</pre>
+            <button onclick="upvote(${s.id}, this)">👍 Upvote</button>`;
+          box.appendChild(div);
+        });
+      });
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function upvote(sid, btn) {
+      fetch('/api/upvote/' + sid, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({voter_id: voterId})
+      }).then(r => r.json()).then(d => {
+        if (d.votes !== undefined) { btn.textContent = '✅ Voted (' + d.votes + ')'; btn.disabled = true; }
+        else alert(d.error || 'Vote failed');
+      });
+    }
+
+    function submitSolution(type) {
+      const nameEl = document.getElementById(type === 'steps' ? 'steps-name' : 'short-name');
+      const contEl = document.getElementById(type === 'steps' ? 'steps-content' : 'short-content');
+      const content = contEl.value.trim();
+      if (!content) return alert('Content required');
+      fetch('/api/solutions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question_id: qid, type, content, user_name: nameEl.value.trim()})
+      }).then(r => r.json()).then(d => {
+        if (d.id) { contEl.value = ''; loadSolutions(type); }
+        else alert(d.error || 'Failed');
+      });
+    }
+
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        if (tab === 'steps') loadSolutions('steps');
+        if (tab === 'short_theory') loadSolutions('short_theory');
+      };
+    });
+
+    loadSolutions('steps');
+  </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin Dashboard — TDS Hub</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .admin-wrap { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+    .login-box { max-width: 400px; margin: 4rem auto; background: white; padding: 2rem; border-radius: 8px; border: 1px solid #ddd; }
+    .login-box input { margin-bottom: 1rem; }
+    .panel { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .panel h2 { margin-top: 0; }
+    .row { display: flex; gap: .5rem; align-items: flex-start; flex-wrap: wrap; }
+    .row > * { margin-bottom: .5rem; }
+    .row input, .row textarea, .row select { flex: 1; min-width: 150px; }
+    .row textarea { min-height: 60px; font-family: ui-monospace, monospace; font-size: .9rem; }
+    .btn-danger { background: #d73a49; }
+    .btn-secondary { background: #6a737d; }
+    .btn-small { padding: .25rem .6rem; font-size: .85rem; }
+    .msg { padding: .75rem; border-radius: 6px; margin-bottom: 1rem; display: none; }
+    .msg.ok { background: #d4f5d4; color: #1a5e1a; display: block; }
+    .msg.err { background: #ffd7d5; color: #8b1a1a; display: block; }
+    .item { border-left: 3px solid #0366d6; padding: .5rem .75rem; margin: .5rem 0; background: #fafbfc; border-radius: 4px; }
+    .item-head { display: flex; justify-content: space-between; align-items: center; }
+    .item-head strong { flex: 1; }
+    .hidden { display: none; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #eee; }
+    th { background: #f6f8fa; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <header><h1>🛠️ Admin Dashboard</h1></header>
+
+  <!-- Login screen -->
+  <div id="login-screen" class="login-box">
+    <h2>Enter Admin Key</h2>
+    <input id="admin-key-input" type="password" placeholder="Admin key" autocomplete="off">
+    <button onclick="login()">Login</button>
+    <p id="login-error" style="color:#d73a49; display:none;">Invalid key.</p>
+  </div>
+
+  <!-- Main dashboard -->
+  <div id="dashboard" class="admin-wrap hidden">
+    <div id="msg" class="msg"></div>
+
+    <!-- Weeks panel -->
+    <div class="panel">
+      <h2>📅 Weeks & Projects</h2>
+      <div class="row">
+        <input id="week-name" placeholder="Week name (e.g. Week 1)">
+        <input id="week-order" type="number" placeholder="Order" style="max-width:100px;">
+        <select id="week-project">
+          <option value="false">Week</option>
+          <option value="true">Project</option>
+        </select>
+        <button onclick="createWeek()">+ Add</button>
+      </div>
+      <div id="week-list"></div>
+    </div>
+
+    <!-- Questions panel -->
+    <div class="panel">
+      <h2>❓ Questions</h2>
+      <div class="row">
+        <select id="q-week" onchange="loadQuestions()"></select>
+      </div>
+      <div class="row">
+        <input id="q-title" placeholder="Question title">
+        <input id="q-order" type="number" placeholder="Order" style="max-width:100px;">
+        <button onclick="createQuestion()">+ Add</button>
+      </div>
+      <div id="question-list"></div>
+    </div>
+
+    <!-- Full theory & conclusion editor -->
+    <div class="panel">
+      <h2>📖 Edit Theory & Conclusion</h2>
+      <div class="row">
+        <select id="edit-q-select" onchange="loadQuestionForEdit()"></select>
+      </div>
+      <div id="edit-area" class="hidden">
+        <p><strong>Title:</strong></p>
+        <input id="edit-title" style="width:100%;">
+        <p><strong>Full Theory:</strong></p>
+        <textarea id="edit-theory" style="width:100%; min-height:120px;"></textarea>
+        <p><strong>Conclusion:</strong></p>
+        <textarea id="edit-conclusion" style="width:100%; min-height:100px;"></textarea>
+        <button onclick="saveQuestionEdit()">💾 Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ADMIN_KEY = sessionStorage.getItem('admin_key') || '';
+    let allWeeks = [];
+    let allQuestionsByWeek = {};
+
+    // ---------- Helpers ----------
+    function $(id) { return document.getElementById(id); }
+
+    function showMsg(text, ok = true) {
+      const el = $('msg');
+      el.textContent = text;
+      el.className = 'msg ' + (ok ? 'ok' : 'err');
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function api(path, opts = {}) {
+      opts.headers = opts.headers || {};
+      opts.headers['X-Admin-Key'] = ADMIN_KEY;
+      if (opts.body && typeof opts.body !== 'string') {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(opts.body);
+      }
+      const res = await fetch(path, opts);
+      if (res.status === 403) {
+        sessionStorage.removeItem('admin_key');
+        location.reload();
+        throw new Error('Unauthorized');
+      }
+      return res;
+    }
+
+    // ---------- Login ----------
+    async function login() {
+      const key = $('admin-key-input').value.trim();
+      if (!key) return;
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({key})
+      });
+      if (res.ok) {
+        ADMIN_KEY = key;
+        sessionStorage.setItem('admin_key', key);
+        $('login-screen').classList.add('hidden');
+        $('dashboard').classList.remove('hidden');
+        await initDashboard();
+      } else {
+        $('login-error').style.display = 'block';
+      }
+    }
+
+    // ---------- Weeks ----------
+    async function loadWeeks() {
+      const res = await fetch('/api/weeks');
+      allWeeks = await res.json();
+      const list = $('week-list');
+      list.innerHTML = '';
+      if (!allWeeks.length) {
+        list.innerHTML = '<p><em>No weeks yet.</em></p>';
+      }
+      allWeeks.forEach(w => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="item-head">
+            <strong>${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)}</strong>
+            <span style="color:#666; font-size:.85rem;">${w.question_count} questions</span>
+            <button class="btn-danger btn-small" onclick="deleteWeek(${w.id})">🗑️ Delete</button>
+          </div>`;
+        list.appendChild(div);
+      });
+      // Refresh selects
+      $('q-week').innerHTML = allWeeks.map(w =>
+        `<option value="${w.id}">${escapeHtml(w.name)}</option>`).join('');
+      $('edit-q-select').innerHTML = '';
+      await loadQuestions();
+    }
+
+    async function createWeek() {
+      const name = $('week-name').value.trim();
+      const order = parseInt($('week-order').value) || 0;
+      const is_project = $('week-project').value === 'true';
+      if (!name) return showMsg('Name required', false);
+      const res = await api('/api/admin/week', {
+        method: 'POST',
+        body: {name, order, is_project}
+      });
+      if (res.ok) {
+        $('week-name').value = '';
+        $('week-order').value = '';
+        showMsg('Week created');
+        await loadWeeks();
+      } else showMsg('Failed to create week', false);
+    }
+
+    async function deleteWeek(id) {
+      if (!confirm('Delete this week and all its questions?')) return;
+      const res = await api('/api/admin/week/' + id, {method: 'DELETE'});
+      if (res.ok) { showMsg('Week deleted'); await loadWeeks(); }
+      else showMsg('Failed to delete', false);
+    }
+
+    // ---------- Questions ----------
+    async function loadQuestions() {
+      const weekId = parseInt($('q-week').value);
+      if (!weekId) { $('question-list').innerHTML = ''; return; }
+      const res = await fetch('/api/weeks/' + weekId);
+      const data = await res.json();
+      const list = $('question-list');
+      list.innerHTML = '';
+      if (!data.questions.length) {
+        list.innerHTML = '<p><em>No questions yet.</em></p>';
+      }
+      data.questions.forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="item-head">
+            <strong>${escapeHtml(q.title)}</strong>
+            <a href="/question/${q.id}" target="_blank" class="btn-small" style="background:#6a737d;color:white;text-decoration:none;padding:.25rem .6rem;border-radius:4px;">View</a>
+          </div>`;
+        list.appendChild(div);
+      });
+      // Populate edit select
+      const sel = $('edit-q-select');
+      sel.innerHTML = '<option value="">-- Select question --</option>' +
+        data.questions.map(q => `<option value="${q.id}">${escapeHtml(q.title)}</option>`).join('');
+    }
+
+    async function createQuestion() {
+      const weekId = parseInt($('q-week').value);
+      const title = $('q-title').value.trim();
+      const order = parseInt($('q-order').value) || 0;
+      if (!weekId) return showMsg('Select a week first', false);
+      if (!title) return showMsg('Title required', false);
+      const res = await api('/api/admin/question', {
+        method: 'POST',
+        body: {week_id: weekId, title, order}
+      });
+      if (res.ok) {
+        $('q-title').value = '';
+        $('q-order').value = '';
+        showMsg('Question created');
+        await loadWeeks();
+        // Restore selected week
+        $('q-week').value = weekId;
+        await loadQuestions();
+      } else showMsg('Failed to create', false);
+    }
+
+    async function loadQuestionForEdit() {
+      const qid = $('edit-q-select').value;
+      if (!qid) { $('edit-area').classList.add('hidden'); return; }
+      const res = await fetch('/api/questions/' + qid);
+      const q = await res.json();
+      $('edit-area').classList.remove('hidden');
+      $('edit-title').value = q.title;
+      $('edit-theory').value = q.full_theory || '';
+      $('edit-conclusion').value = q.conclusion || '';
+    }
+
+    async function saveQuestionEdit() {
+      const qid = $('edit-q-select').value;
+      if (!qid) return;
+      const res = await api('/api/admin/question/' + qid, {
+        method: 'PUT',
+        body: {
+          title: $('edit-title').value,
+          full_theory: $('edit-theory').value,
+          conclusion: $('edit-conclusion').value
+        }
+      });
+      if (res.ok) showMsg('Saved');
+      else showMsg('Save failed', false);
+    }
+
+    // ---------- Init ----------
+    async function initDashboard() {
+      await loadWeeks();
+    }
+
+    // Auto-login if key exists in session
+    if (ADMIN_KEY) {
+      $('login-screen').classList.add('hidden');
+      $('dashboard').classList.remove('hidden');
+      initDashboard();
+    }
+  </script>
+</body>
+</html>

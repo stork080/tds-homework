@@ -8,37 +8,50 @@
 </head>
 <body>
   <header>
-    <h1>📚 TDS Assignment Hub</h1>
+    <h1>⚙️ TDS Hub</h1>
     <nav>
       <a href="/">🏠 Home</a>
       <a href="/admin">🛠️ Admin</a>
     </nav>
   </header>
   <main>
-    <h2>📅 Weeks</h2>
-    <ul id="week-list" class="card-list"></ul>
-    <h2>📦 Projects</h2>
-    <ul id="project-list" class="card-list"></ul>
+    <h2>Weeks</h2>
+    <div id="week-list" class="week-grid"></div>
+
+    <h2>Projects</h2>
+    <div id="project-list" class="week-grid"></div>
   </main>
   <script>
     fetch('/api/weeks').then(r => r.json()).then(weeks => {
       const wk = document.getElementById('week-list');
       const pr = document.getElementById('project-list');
-      const weeksArr = weeks.filter(w => !w.is_project);
-      const projsArr = weeks.filter(w => w.is_project);
-      if (!weeksArr.length) wk.innerHTML = '<li class="empty">No weeks yet.</li>';
-      if (!projsArr.length) pr.innerHTML = '<li class="empty">No projects yet.</li>';
-      weeksArr.forEach(w => {
-        const li = document.createElement('li');
-        li.className = 'card';
-        li.innerHTML = `<a href="/week/${w.id}"><strong>📅 ${w.name}</strong><br><small>${w.question_count} question${w.question_count===1?'':'s'}</small></a>`;
-        wk.appendChild(li);
-      });
-      projsArr.forEach(w => {
-        const li = document.createElement('li');
-        li.className = 'card project';
-        li.innerHTML = `<a href="/week/${w.id}"><strong>📦 ${w.name}</strong><br><small>${w.question_count} question${w.question_count===1?'':'s'}</small></a>`;
-        pr.appendChild(li);
+      
+      if (!weeks.length) {
+        wk.innerHTML = '<p style="color:#8b949e">No weeks added yet.</p>';
+        return;
+      }
+
+      weeks.forEach(w => {
+        const div = document.createElement('a');
+        div.href = '/week/' + w.id;
+        div.className = 'week-card' + (w.is_project ? ' is-project' : '');
+        
+        // Extract number for icon (e.g., "Week 4" -> "4", "Project 1" -> "P1")
+        let iconText = '⚙️';
+        if (w.name.toLowerCase().includes('week')) {
+          const num = w.name.match(/\d+/);
+          if (num) iconText = num[0];
+        } else if (w.name.toLowerCase().includes('project')) {
+          const num = w.name.match(/\d+/);
+          iconText = num ? 'P' + num[0] : '📦';
+        }
+
+        div.innerHTML = `
+          <div class="week-gear-icon">${iconText}</div>
+          <div class="week-title">${w.name}</div>
+          <div class="week-subtitle">${w.question_count} Questions</div>
+        `;
+        (w.is_project ? pr : wk).appendChild(div);
       });
     });
   </script>

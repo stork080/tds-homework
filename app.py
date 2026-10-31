@@ -19,6 +19,10 @@ if not db_url:
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
+# Ensure psycopg2 driver is explicit (SQLAlchemy 2.1 defaults to psycopg v3 otherwise)
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+
 # Strip channel_binding which psycopg2 doesn't support
 if "channel_binding=require" in db_url:
     db_url = db_url.replace("&channel_binding=require", "")
@@ -30,7 +34,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
     "pool_recycle": 300,
-    "connect_args": {"sslmode": "require"},
 }
 db = SQLAlchemy(app)
 
@@ -89,7 +92,6 @@ def _init_db():
         _initialized = True
     except Exception:
         _initialized = True
-        # log full traceback — shows up in Vercel logs
         print("=== DB INIT FAILED ===")
         traceback.print_exc()
 
@@ -104,18 +106,25 @@ def require_admin():
 def home():
     return render_template("index.html")
 
+
 @app.route("/week/<int:week_id>")
 def week_page(week_id):
     return render_template("week.html", week_id=week_id)
+
 
 @app.route("/question/<int:qid>")
 def question_page(qid):
     return render_template("question.html", qid=qid)
 
+
+@app.route("/admin")
+def admin_page():
+    return render_template("admin.html")
+
 # ---------- PUBLIC API ----------
 @app.route("/api/weeks")
 def api_weeks():
-    weeks = Week.query.order_by(Week.order).all()
+    weeks = Week.query.order_by(Week.order, Week.id).all()
     return jsonify([{
         "id": w.id, "name": w.name, "is_project": w.is_project,
         "question_count": len(w.questions),
@@ -146,7 +155,7 @@ def api_question(qid):
 @app.route("/api/solutions/<int:qid>")
 def api_solutions(qid):
     stype = request.args.get("type")
-    Question.query.get_or_404(qid)  # 404 if missing
+    Question.query.get_or_404(qid)
     query = Solution.query.filter_by(question_id=qid)
     if stype in ("steps", "short_theory"):
         query = query.filter_by(type=stype)
@@ -197,6 +206,15 @@ def api_upvote(sid):
     return jsonify({"votes": s.votes})
 
 # ---------- ADMIN API ----------
+@app.route("/api/admin/verify", methods=["POST"])
+def admin_verify():
+    data = request.get_json(force=True, silent=True) or {}
+    key = data.get("key", "")
+    if key != ADMIN_KEY:
+        return jsonify({"ok": False}), 403
+    return jsonify({"ok": True})
+
+
 @app.route("/api/admin/week", methods=["POST"])
 def admin_create_week():
     require_admin()
@@ -255,10 +273,18 @@ def admin_delete_week(wid):
     db.session.commit()
     return jsonify({"ok": True})
 
+
+@app.route("/api/admin/question/<int:qid>", methods=["DELETE"])
+def admin_delete_question(qid):
+    require_admin()
+    q = Question.query.get_or_404(qid)
+    db.session.delete(q)
+    db.session.commit()
+    return jsonify({"ok": True})
+
 # ---------- DIAGNOSTIC ----------
 @app.route("/api/health")
 def health():
-    """Visit /api/health to check env vars are loaded."""
     try:
         db.session.execute(db.text("SELECT 1"))
         db_ok = True

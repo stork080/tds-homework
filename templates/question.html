@@ -2,11 +2,15 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Question</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header><a href="/">← Home</a></header>
+  <header>
+    <a href="/" style="color:#c9d1d9; text-decoration:none; font-size:.95rem;">← Home</a>
+    <nav><a href="/admin">🛠️ Admin</a></nav>
+  </header>
   <main>
     <h1 id="q-title">Loading...</h1>
 
@@ -18,27 +22,28 @@
 
     <section id="tab-steps" class="tab-panel">
       <div id="steps-list"></div>
-      <h3>Add a solution</h3>
+      <h3 style="margin-top:2rem;">➕ Add your solution</h3>
       <input id="steps-name" placeholder="Your name (optional)">
-      <textarea id="steps-content" placeholder="Write steps..."></textarea>
-      <button onclick="submitSolution('steps')">Submit</button>
+      <textarea id="steps-content" placeholder="Write the steps to solve this question..."></textarea>
+      <button onclick="submitSolution('steps', this)">Submit Solution</button>
     </section>
 
     <section id="tab-short_theory" class="tab-panel hidden">
       <div id="short-list"></div>
-      <h3>Add a short theory</h3>
+      <h3 style="margin-top:2rem;">➕ Add short theory</h3>
       <input id="short-name" placeholder="Your name (optional)">
-      <textarea id="short-content" placeholder="Write concise theory..."></textarea>
-      <button onclick="submitSolution('short_theory')">Submit</button>
+      <textarea id="short-content" placeholder="Concise theory needed for this question..."></textarea>
+      <button onclick="submitSolution('short_theory', this)">Submit Theory</button>
     </section>
 
     <section id="tab-full" class="tab-panel hidden">
-      <h2>Full Prerequisite Theory</h2>
+      <h2 style="margin-top:0;">📖 Full Prerequisite Theory</h2>
       <div id="full-theory" class="prose"></div>
-      <h2>Conclusion</h2>
+      <h2>🎯 Conclusion</h2>
       <div id="conclusion" class="prose"></div>
     </section>
   </main>
+
   <script>
     const qid = {{ qid }};
     const voterId = (() => {
@@ -49,55 +54,78 @@
 
     fetch('/api/questions/' + qid).then(r => r.json()).then(q => {
       document.getElementById('q-title').textContent = q.title;
-      document.getElementById('full-theory').textContent = q.full_theory || '(not yet added)';
-      document.getElementById('conclusion').textContent = q.conclusion || '(not yet added)';
+      const ft = document.getElementById('full-theory');
+      const cc = document.getElementById('conclusion');
+      ft.textContent = q.full_theory || '(not yet added — check back soon)';
+      cc.textContent = q.conclusion || '(not yet added — check back soon)';
+      if (!q.full_theory) ft.classList.add('placeholder');
+      if (!q.conclusion) cc.classList.add('placeholder');
     });
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 
     function loadSolutions(type) {
       fetch(`/api/solutions/${qid}?type=${type}`).then(r => r.json()).then(list => {
         const box = document.getElementById(type === 'steps' ? 'steps-list' : 'short-list');
         box.innerHTML = '';
-        if (!list.length) { box.innerHTML = '<p><em>No solutions yet. Be the first!</em></p>'; return; }
+        if (!list.length) {
+          box.innerHTML = '<div class="empty" style="padding:1.5rem;">No solutions yet. Be the first! 🚀</div>';
+          return;
+        }
         list.forEach(s => {
           const div = document.createElement('div');
           div.className = 'solution';
           div.innerHTML = `
-            <div class="sol-head"><strong>${s.user_name}</strong> · ${s.votes} 👍</div>
+            <div class="sol-head">
+              <strong>👤 ${escapeHtml(s.user_name)}</strong>
+              <span class="vote-count">👍 ${s.votes}</span>
+            </div>
             <pre>${escapeHtml(s.content)}</pre>
-            <button onclick="upvote(${s.id}, this)">👍 Upvote</button>`;
+            <button class="vote-btn" onclick="upvote(${s.id}, this)">👍 Upvote</button>`;
           box.appendChild(div);
         });
       });
     }
 
-    function escapeHtml(s) {
-      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
     function upvote(sid, btn) {
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Voting...';
       fetch('/api/upvote/' + sid, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({voter_id: voterId})
       }).then(r => r.json()).then(d => {
-        if (d.votes !== undefined) { btn.textContent = '✅ Voted (' + d.votes + ')'; btn.disabled = true; }
-        else alert(d.error || 'Vote failed');
-      });
+        if (d.votes !== undefined) {
+          btn.innerHTML = '✅ Voted (' + d.votes + ')';
+          const countEl = btn.parentElement.querySelector('.vote-count');
+          if (countEl) countEl.textContent = '👍 ' + d.votes;
+        } else {
+          btn.innerHTML = '⚠️ ' + (d.error || 'Failed');
+          setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+        }
+      }).catch(() => { btn.innerHTML = original; btn.disabled = false; });
     }
 
-    function submitSolution(type) {
+    function submitSolution(type, btn) {
       const nameEl = document.getElementById(type === 'steps' ? 'steps-name' : 'short-name');
       const contEl = document.getElementById(type === 'steps' ? 'steps-content' : 'short-content');
       const content = contEl.value.trim();
-      if (!content) return alert('Content required');
+      if (!content) return alert('Please write something first');
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Submitting...';
       fetch('/api/solutions', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({question_id: qid, type, content, user_name: nameEl.value.trim()})
       }).then(r => r.json()).then(d => {
-        if (d.id) { contEl.value = ''; loadSolutions(type); }
-        else alert(d.error || 'Failed');
-      });
+        btn.innerHTML = original; btn.disabled = false;
+        if (d.id) { contEl.value = ''; nameEl.value = ''; loadSolutions(type); }
+        else alert(d.error || 'Failed to submit');
+      }).catch(() => { btn.innerHTML = original; btn.disabled = false; });
     }
 
     document.querySelectorAll('.tab').forEach(btn => {

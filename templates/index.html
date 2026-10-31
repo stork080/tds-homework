@@ -2,11 +2,43 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TDS Assignment Hub</title>
   <link rel="stylesheet" href="/static/style.css">
+  <style>
+    header {
+      background: linear-gradient(135deg, #24292e 0%, #404850 100%);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    header h1 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; gap: .5rem; }
+    header nav { display: flex; gap: .5rem; }
+    header nav a {
+      color: white; text-decoration: none;
+      padding: .4rem .9rem; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.25);
+      font-size: .9rem;
+      transition: background .15s, border-color .15s;
+    }
+    header nav a:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.5); }
+    @media (max-width: 640px) {
+      header { padding: 1rem; flex-direction: column; gap: .75rem; }
+      header h1 { font-size: 1.1rem; }
+    }
+  </style>
 </head>
 <body>
-  <header><h1>📚 TDS Assignment Hub</h1></header>
+  <header>
+    <h1>📚 TDS Assignment Hub</h1>
+    <nav>
+      <a href="/">🏠 Home</a>
+      <a href="/admin">🛠️ Admin</a>
+    </nav>
+  </header>
   <main>
     <h2>Weeks</h2>
     <ul id="week-list" class="card-list"></ul>
@@ -17,6 +49,11 @@
     fetch('/api/weeks').then(r => r.json()).then(weeks => {
       const wk = document.getElementById('week-list');
       const pr = document.getElementById('project-list');
+      if (!weeks.length) {
+        wk.innerHTML = '<li class="empty">No weeks yet.</li>';
+        pr.innerHTML = '<li class="empty">No projects yet.</li>';
+        return;
+      }
       weeks.forEach(w => {
         const li = document.createElement('li');
         li.className = 'card';

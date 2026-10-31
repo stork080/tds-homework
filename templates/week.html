@@ -2,11 +2,15 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Questions</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header><a href="/">← Back</a></header>
+  <header>
+    <a href="/" style="color:#c9d1d9; text-decoration:none; font-size:.95rem;">← Back to Home</a>
+    <nav><a href="/admin">🛠️ Admin</a></nav>
+  </header>
   <main>
     <h1 id="week-title">Loading...</h1>
     <ul id="q-list" class="card-list"></ul>
@@ -14,13 +18,23 @@
   <script>
     const weekId = {{ week_id }};
     fetch('/api/weeks/' + weekId).then(r => r.json()).then(w => {
-      document.getElementById('week-title').textContent = w.name;
+      document.getElementById('week-title').textContent = (w.name.startsWith('Project') ? '📦 ' : '📅 ') + w.name;
       const ul = document.getElementById('q-list');
-      if (w.questions.length === 0) ul.innerHTML = '<li>No questions yet.</li>';
-      w.questions.forEach(q => {
+      if (!w.questions.length) {
+        ul.innerHTML = '<li class="empty">No questions in this week yet.</li>';
+        return;
+      }
+      w.questions.forEach((q, i) => {
         const li = document.createElement('li');
-        li.className = 'card';
-        li.innerHTML = `<a href="/question/${q.id}">${q.title}</a>`;
+        li.className = 'q-card';
+        li.style.gridColumn = '1 / -1';
+        li.innerHTML = `
+          <span class="q-icon">❓</span>
+          <div class="q-text">
+            <div class="q-title">${i + 1}. ${q.title}</div>
+            <div class="q-sub">Click to view solutions →</div>
+          </div>`;
+        li.onclick = () => location.href = '/question/' + q.id;
         ul.appendChild(li);
       });
     });

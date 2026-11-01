@@ -7,28 +7,155 @@
   <!-- Prism.js for Syntax Highlighting -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
   <style>
-    /* [Keep all your existing CSS here from the previous question.html] */
-    /* ... Paste the :root, body, header, .q-header-box, .tabs, .tab-panel, .section-title, .theory-box, inputs, buttons CSS ... */
-    
-    /* NEW STYLES */
-    .sort-bar { display: flex; justify-content: flex-end; margin-bottom: 1rem; gap: .5rem; }
-    .sort-bar select { padding: .4rem .8rem; background: var(--bg); color: white; border: 1px solid var(--border); border-radius: 6px; }
-    
+    :root {
+      --primary: #0366d6;
+      --primary-dark: #0250a3;
+      --success: #238636;
+      --success-dark: #2ea043;
+      --bg: #0d1117;
+      --panel-bg: #161b22;
+      --border: rgba(255,255,255,.08);
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      background-attachment: fixed; color: var(--text); min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: rgba(13, 17, 23, 0.85); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border); padding: 1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    header nav a {
+      color: #c9d1d9; text-decoration: none; padding: .45rem 1rem; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12); font-size: .9rem; font-weight: 500; transition: all .2s ease;
+    }
+    header nav a:hover { background: rgba(88,166,255,.15); border-color: #58a6ff; color: #fff; }
+
+    /* ===== MAIN ===== */
+    .main-container { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem 4rem; animation: fadeUp 0.4s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+    .q-header-box {
+      background: var(--panel-bg); border: 1px solid var(--border);
+      border-left: 4px solid #58a6ff; border-radius: 12px;
+      padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .q-header-box h1 { margin: 0; font-size: 1.25rem; line-height: 1.5; color: #fff; font-weight: 600; }
+
+    /* ===== TABS ===== */
+    .tabs {
+      display: flex; gap: .5rem; margin-bottom: 1.5rem;
+      background: rgba(0, 0, 0, 0.3); padding: .4rem;
+      border-radius: 12px; border: 1px solid var(--border); overflow-x: auto;
+    }
+    .tab {
+      flex: 1; padding: .8rem 1rem; background: transparent; color: var(--text-muted);
+      border: 1px solid transparent; border-radius: 8px; font-size: .95rem; font-weight: 600;
+      cursor: pointer; transition: all .2s ease; white-space: nowrap;
+      display: flex; align-items: center; justify-content: center; gap: .4rem;
+    }
+    .tab:hover { background: rgba(255, 255, 255, 0.05); color: #c9d1d9; }
+    .tab.active { background: var(--panel-bg); color: #58a6ff; box-shadow: 0 4px 10px rgba(0,0,0,.3); border-color: var(--border); }
+
+    .tab-panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+    .hidden { display: none !important; }
+
+    /* ===== SOLUTIONS ===== */
+    .solution-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-left: 3px solid var(--success); border-radius: 8px;
+      padding: 1.25rem; margin-bottom: 1rem; transition: all .2s ease;
+    }
+    .solution-card:hover { border-color: var(--success-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(35,134,54,.1); }
+    .solution-card.conclusion-card { border-left-color: #8b5cf6; }
+    .solution-card.conclusion-card:hover { border-color: #a78bfa; box-shadow: 0 4px 12px rgba(139,92,246,.15); }
+
     .sol-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .75rem; }
     .author-info { display: flex; align-items: center; gap: .5rem; }
     .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: .8rem; background: #58a6ff; }
+    .sol-author { font-weight: 600; color: #c9d1d9; font-size: .9rem; }
+    
+    .sol-votes { background: rgba(46,160,67,.15); color: var(--success-dark); padding: .2rem .6rem; border-radius: 12px; font-weight: 700; font-size: .8rem; }
+    .conclusion-card .sol-votes { background: rgba(139,92,246,.15); color: #a78bfa; }
+    
     .flag-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: .2rem; transition: color .2s; }
     .flag-btn:hover { color: #f85149; }
-    
-    /* Code block styling */
-    .sol-content pre { margin: 0; border-radius: 8px; }
+
+    .sol-content { white-space: pre-wrap; line-height: 1.6; color: var(--text); font-size: .95rem; margin-bottom: 1rem; }
+    .sol-content pre { margin: 1rem 0 0 0; border-radius: 8px; }
     .copy-btn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); padding: .3rem .6rem; border-radius: 4px; font-size: .75rem; cursor: pointer; margin-top: .5rem; }
     .copy-btn:hover { background: #30363d; }
+
+    /* ===== FORMS ===== */
+    .sort-bar { display: flex; justify-content: flex-end; margin-bottom: 1rem; gap: .5rem; }
+    .sort-bar select { padding: .4rem .8rem; background: var(--bg); color: white; border: 1px solid var(--border); border-radius: 6px; outline: none; }
+    
+    .form-group { margin-bottom: 1rem; }
+    input, textarea {
+      width: 100%; padding: .8rem 1rem; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: white; font-family: inherit; font-size: .95rem; transition: all .2s;
+    }
+    input:focus, textarea:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,.15); }
+    textarea { resize: vertical; min-height: 100px; }
+
+    /* ===== BUTTONS ===== */
+    button {
+      background: var(--primary); color: white; border: none; padding: .7rem 1.5rem;
+      border-radius: 8px; cursor: pointer; font-size: .95rem; font-weight: 600; transition: all .2s;
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    }
+    button:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(3,102,214,.4); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+
+    button.btn-conclusion { background: #8b5cf6; }
+    button.btn-conclusion:hover:not(:disabled) { background: #7c3aed; box-shadow: 0 4px 12px rgba(139,92,246,.4); }
+
+    button.btn-upvote { background: rgba(46,160,67,.15); color: var(--success-dark); border: 1px solid rgba(46,160,67,.3); padding: .4rem 1rem; font-size: .85rem; }
+    button.btn-upvote:hover:not(:disabled) { background: var(--success); color: white; border-color: var(--success); }
+    .conclusion-card button.btn-upvote { background: rgba(139,92,246,.15); color: #a78bfa; border: 1px solid rgba(139,92,246,.3); }
+    .conclusion-card button.btn-upvote:hover:not(:disabled) { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+
+    /* ===== SECTION TITLES & THEORY ===== */
+    .section-title {
+      font-size: 1.1rem; font-weight: 700; color: #fff; margin: 2.5rem 0 1rem;
+      display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem;
+    }
+    .theory-box { background: var(--bg); border-left: 4px solid #f59e0b; padding: 1.5rem; border-radius: 0 8px 8px 0; margin-bottom: 2rem; line-height: 1.7; color: #c9d1d9; white-space: pre-wrap; }
+    .theory-box.conclusion { border-left-color: #8b5cf6; }
+    .placeholder-text { color: var(--text-muted); font-style: italic; }
+
+    .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); font-style: italic; background: rgba(255,255,255,.02); border: 2px dashed var(--border); border-radius: 8px; }
+
+    @media (max-width: 640px) {
+      .tabs { flex-direction: column; }
+      .tab { justify-content: flex-start; }
+      .main-container { padding: 1rem; }
+    }
   </style>
 </head>
 <body>
-  <!-- [Keep the Header and Main container here] -->
-  <!-- ... Paste the header, q-header-box, and tabs here ... -->
+  <header>
+    <a href="/" style="color:#c9d1d9; text-decoration:none; font-weight:600; font-size:1.1rem;">← Back to Home</a>
+    <nav><a href="/admin">🛠️ Admin</a></nav>
+  </header>
+
+  <main class="main-container">
+    <div class="q-header-box">
+      <h1 id="q-title">Loading question...</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="steps">🪜 Steps</button>
+      <button class="tab" data-tab="short_theory">📘 Short Theory</button>
+      <button class="tab" data-tab="full">📖 Full Theory</button>
+    </div>
 
     <!-- Tab 1: Steps -->
     <section id="tab-steps" class="tab-panel">
@@ -40,10 +167,14 @@
         </select>
       </div>
       <div id="steps-list"></div>
-      <!-- [Keep the form here] -->
+      
+      <div class="section-title">➕ Add your solution</div>
+      <div class="form-group"><input id="steps-name" placeholder="Your name (optional)"></div>
+      <div class="form-group"><textarea id="steps-content" placeholder="Write the step-by-step solution here..."></textarea></div>
+      <button onclick="submitSolution('steps', this)">Submit Solution</button>
     </section>
 
-    <!-- Tab 2: Short Theory -->
+    <!-- Tab 2: Short Theory + Conclusions -->
     <section id="tab-short_theory" class="tab-panel hidden">
       <div class="sort-bar">
         <select id="sort-short" onchange="loadSolutions('short_theory')">
@@ -53,16 +184,29 @@
         </select>
       </div>
       <div id="short-list"></div>
-      <!-- [Keep the form here] -->
       
+      <div class="section-title">➕ Add short theory</div>
+      <div class="form-group"><input id="short-name" placeholder="Your name (optional)"></div>
+      <div class="form-group"><textarea id="short-content" placeholder="Write the concise theory needed for this question..."></textarea></div>
+      <button onclick="submitSolution('short_theory', this)">Submit Theory</button>
+
       <div class="section-title" style="color: #a78bfa; margin-top: 3rem;">🎯 User Conclusions</div>
       <div id="conclusion-list"></div>
-      <!-- [Keep the conclusion form here] -->
+
+      <div class="section-title" style="color: #a78bfa;">➕ Add a conclusion</div>
+      <div class="form-group"><input id="conclusion-name" placeholder="Your name (optional)"></div>
+      <div class="form-group"><textarea id="conclusion-content" placeholder="What did you learn from this question?"></textarea></div>
+      <button class="btn-conclusion" onclick="submitSolution('conclusion', this)">Submit Conclusion</button>
     </section>
 
     <!-- Tab 3: Full Theory -->
-    <!-- [Keep the Full Theory section] -->
+    <section id="tab-full" class="tab-panel hidden">
+      <div class="section-title" style="margin-top:0;">📖 Full Prerequisite Theory</div>
+      <div id="full-theory" class="theory-box"></div>
 
+      <div class="section-title">🎯 Official Conclusion</div>
+      <div id="conclusion" class="theory-box conclusion"></div>
+    </section>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

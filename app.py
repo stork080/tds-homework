@@ -53,7 +53,10 @@ class Question(db.Model):
     __tablename__ = "question"
     id = db.Column(db.Integer, primary_key=True)
     week_id = db.Column(db.Integer, db.ForeignKey("week.id"), nullable=False)
-    title = db.Column(db.String(300), nullable=False)
+    
+    # CHANGE THIS LINE from db.String(300) to db.Text
+    title = db.Column(db.Text, nullable=False) 
+    
     order = db.Column(db.Integer, default=0)
     full_theory = db.Column(db.Text, default="")
     conclusion = db.Column(db.Text, default="")

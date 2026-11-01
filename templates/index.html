@@ -5,46 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TDS Assignment Hub</title>
   <style>
-    :root { --primary: #0366d6; --bg: #0d1117; --panel-bg: #161b22; --border: rgba(255,255,255,.08); --text: #e6edf3; --text-muted: #8b949e; }
+    :root {
+      --primary: #0366d6;
+      --bg: #0d1117;
+      --panel-bg: #161b22;
+      --border: rgba(255,255,255,.08);
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, sans-serif; background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%); background-attachment: fixed; color: var(--text); min-height: 100vh; }
-    header { background: rgba(13, 17, 23, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
-    header h1 { margin: 0; font-size: 1.4rem; color: #fff; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      background-attachment: fixed; color: var(--text); min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ===== HEADER & SEARCH ===== */
+    header {
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      flex-wrap: wrap; gap: 1rem;
+    }
+    header h1 { margin: 0; font-size: 1.4rem; color: #fff; display: flex; align-items: center; gap: .5rem; }
     
-    /* Search Bar */
-    .search-container { flex: 1; max-width: 400px; margin: 0 2rem; position: relative; }
-    .search-container input { width: 100%; padding: .6rem 1rem .6rem 2.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; color: white; font-size: .9rem; transition: all .2s; }
+    /* Global Search Bar */
+    .search-container { flex: 1; max-width: 500px; position: relative; margin: 0 1rem; }
+    .search-container input {
+      width: 100%; padding: .7rem 1rem .7rem 2.5rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; color: white; font-size: .95rem; transition: all .2s;
+    }
     .search-container input:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,.15); }
     .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-    
-    header nav a { color: #c9d1d9; text-decoration: none; padding: .45rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,.12); font-size: .9rem; transition: all .2s; }
-    header nav a:hover { background: rgba(88,166,255,.15); border-color: #58a6ff; color: #fff; }
-    
+
+    header nav a {
+      color: #c9d1d9; padding: .45rem 1rem; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12); font-size: .9rem; font-weight: 500;
+      transition: all .2s ease;
+    }
+    header nav a:hover { background: rgba(88,166,255,.15); border-color: #58a6ff; color: #fff; transform: translateY(-1px); }
+
+    /* ===== WRAPPER & PANELS ===== */
     .admin-wrap { max-width: 1100px; margin: 2rem auto; padding: 0 1rem 4rem; }
-    .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
-    .panel h2 { margin: 0 0 1rem; font-size: 1.15rem; display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid var(--border); padding-bottom: .75rem; color: #fff; }
-    .panel h2 .count { margin-left: auto; background: var(--bg); padding: .15rem .6rem; border-radius: 20px; font-size: .8rem; color: var(--text-muted); border: 1px solid var(--border); }
+    .panel {
+      background: var(--panel-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15); animation: fadeUp .4s ease;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    #week-list, #project-list { display: flex; flex-direction: column; gap: .5rem; }
-    .item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--bg); border-left: 4px solid var(--primary); border-radius: 8px; transition: all .2s; cursor: pointer; border: 1px solid var(--border); border-left-width: 4px; text-decoration: none; color: inherit; }
+    .panel h2 {
+      margin: 0 0 1rem; font-size: 1.15rem; display: flex; align-items: center; gap: .5rem;
+      border-bottom: 1px solid var(--border); padding-bottom: .75rem; color: #fff;
+    }
+    .panel h2 .count {
+      margin-left: auto; background: var(--bg); padding: .15rem .6rem; border-radius: 20px;
+      font-size: .8rem; font-weight: normal; color: var(--text-muted); border: 1px solid var(--border);
+    }
+
+    /* ===== LISTS & ITEMS ===== */
+    #week-list, #project-list, #search-results { display: flex; flex-direction: column; gap: .5rem; }
+    .item {
+      display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem;
+      background: var(--bg); border-left: 4px solid #58a6ff;
+      border-radius: 8px; transition: all .2s ease; cursor: pointer;
+      border: 1px solid var(--border); border-left-width: 4px; text-decoration: none;
+    }
     .item:hover { background: #1c2128; transform: translateX(4px); border-color: #58a6ff; box-shadow: 0 4px 12px rgba(88,166,255,.1); }
     .item.is-project { border-left-color: #f59e0b; }
     .item.is-project:hover { border-color: #f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,.1); }
-    .gear-icon { width: 50px; height: 50px; background: #21262d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; color: #58a6ff; flex-shrink: 0; transition: all .3s; }
+
+    .gear-icon {
+      width: 50px; height: 50px; background: #21262d; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 800; color: #58a6ff; flex-shrink: 0; transition: all .3s ease;
+    }
     .item.is-project .gear-icon { color: #f59e0b; }
     .item:hover .gear-icon { transform: scale(1.15) rotate(10deg); background: #2d333b; }
+
     .item-info { flex: 1; min-width: 0; }
-    .item-title { font-weight: 600; font-size: 1.05rem; color: #fff; }
-    .item-sub { font-size: .82rem; color: var(--text-muted); display: flex; align-items: center; gap: .5rem; margin-top: .2rem; }
-    .badge { display: inline-block; padding: .1rem .5rem; border-radius: 12px; font-size: .75rem; font-weight: 600; }
+    .item-title { font-weight: 600; font-size: 1.05rem; color: #fff; margin-bottom: .2rem; }
+    .item-sub { font-size: .82rem; color: var(--text-muted); display: flex; align-items: center; gap: .5rem; }
+
+    .badge { display: inline-block; padding: .15rem .5rem; border-radius: 12px; font-size: .72rem; font-weight: 600; letter-spacing: .3px; }
     .badge-week { background: rgba(3,102,214,.15); color: #58a6ff; }
     .badge-project { background: rgba(245,158,11,.15); color: #f59e0b; }
-    
-    .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); font-style: italic; border: 2px dashed var(--border); border-radius: 8px; }
-    
+
+    .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); font-style: italic; border: 2px dashed var(--border); border-radius: 8px; background: rgba(255,255,255,.02); }
+
     @media (max-width: 768px) {
-      header { flex-direction: column; gap: 1rem; padding: 1rem; }
-      .search-container { margin: 0; width: 100%; max-width: none; }
+      header { flex-direction: column; align-items: stretch; padding: 1rem; }
+      .search-container { margin: 0; max-width: none; }
+      header nav { display: flex; justify-content: flex-end; }
     }
   </style>
 </head>
@@ -59,16 +117,19 @@
   </header>
 
   <div class="admin-wrap">
+    <!-- Search Results Panel (Hidden by default) -->
     <div class="panel" id="search-results-panel" style="display:none;">
       <h2>🔍 Search Results</h2>
       <div id="search-results"></div>
     </div>
 
+    <!-- Weeks Panel -->
     <div class="panel" id="main-weeks-panel">
       <h2>📅 Weeks <span class="count" id="week-count">0</span></h2>
       <div id="week-list"><div class="empty-state">Loading...</div></div>
     </div>
 
+    <!-- Projects Panel -->
     <div class="panel" id="main-projects-panel">
       <h2>📦 Projects <span class="count" id="project-count">0</span></h2>
       <div id="project-list"><div class="empty-state">Loading...</div></div>
@@ -79,13 +140,16 @@
     let allWeeksData = [];
     let allQuestionsData = []; // Flat list for search
 
-    function escapeHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escapeHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 
+    // Fetch all data on load
     async function loadData() {
       const res = await fetch('/api/weeks');
       allWeeksData = await res.json();
       
-      // Fetch all questions for search
+      // Fetch questions for every week to enable global search
       for (let w of allWeeksData) {
         const qRes = await fetch('/api/weeks/' + w.id);
         const qData = await qRes.json();
@@ -107,10 +171,14 @@
 
       function renderItems(arr, container, isProject) {
         container.innerHTML = '';
-        if (!arr.length) return container.innerHTML = `<div class="empty-state">No ${isProject ? 'projects' : 'weeks'} yet.</div>`;
+        if (!arr.length) {
+          container.innerHTML = `<div class="empty-state">No ${isProject ? 'projects' : 'weeks'} added yet.</div>`;
+          return;
+        }
         arr.forEach(w => {
           const numMatch = w.name.match(/\d+/);
           const iconText = numMatch ? (isProject ? 'P' + numMatch[0] : numMatch[0]) : (isProject ? '📦' : '⚙️');
+          
           const a = document.createElement('a');
           a.href = '/week/' + w.id;
           a.className = 'item' + (isProject ? ' is-project' : '');
@@ -118,7 +186,10 @@
             <div class="gear-icon">${iconText}</div>
             <div class="item-info">
               <div class="item-title">${escapeHtml(w.name)}</div>
-              <div class="item-sub"><span class="badge ${isProject ? 'badge-project' : 'badge-week'}">${isProject ? 'Project' : 'Week'}</span> ${w.question_count} questions</div>
+              <div class="item-sub">
+                <span class="badge ${isProject ? 'badge-project' : 'badge-week'}">${isProject ? 'Project' : 'Week'}</span>
+                ${w.question_count} question${w.question_count === 1 ? '' : 's'}
+              </div>
             </div>`;
           container.appendChild(a);
         });
@@ -127,6 +198,7 @@
       renderItems(projsArr, prList, true);
     }
 
+    // Search Logic
     function searchApp() {
       const query = document.getElementById('global-search').value.toLowerCase().trim();
       const resultsPanel = document.getElementById('search-results-panel');
@@ -150,6 +222,7 @@
 
       const container = document.getElementById('search-results');
       container.innerHTML = '';
+      
       if (!matches.length) {
         container.innerHTML = '<div class="empty-state">No questions found matching your search.</div>';
         return;
@@ -162,7 +235,9 @@
         a.innerHTML = `
           <div class="item-info">
             <div class="item-title">${escapeHtml(q.title)}</div>
-            <div class="item-sub">Found in: ${escapeHtml(q.weekName)}</div>
+            <div class="item-sub">
+              <span class="badge badge-week">${escapeHtml(q.weekName)}</span>
+            </div>
           </div>`;
         container.appendChild(a);
       });

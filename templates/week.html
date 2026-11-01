@@ -3,38 +3,247 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Questions</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <title>Questions — TDS Hub</title>
+  <style>
+    :root {
+      --primary: #0366d6;
+      --primary-dark: #0250a3;
+      --bg: #0d1117;
+      --panel-bg: #161b22;
+      --border: rgba(255,255,255,.08);
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    header h1 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; gap: .5rem; color: #fff; }
+    header nav { display: flex; gap: .5rem; }
+    header nav a {
+      color: #c9d1d9; text-decoration: none;
+      padding: .45rem 1rem; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: .9rem; font-weight: 500;
+      transition: all .2s ease;
+    }
+    header nav a:hover {
+      background: rgba(88,166,255,.15);
+      border-color: #58a6ff;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* ===== MAIN WRAPPER (Centered) ===== */
+    .main-container {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1.5rem 4rem;
+      animation: fadeUp 0.5s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .page-title .emoji { font-size: 2.5rem; margin-right: .5rem; vertical-align: middle; }
+
+    /* ===== INTERACTIVE QUESTION BUTTONS ===== */
+    .q-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .q-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid #58a6ff;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* The gradient shine effect on hover */
+    .q-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(88,166,255,0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+
+    .q-btn:hover {
+      transform: translateY(-4px) scale(1.01);
+      border-color: #58a6ff;
+      box-shadow: 0 10px 25px rgba(88,166,255,0.15);
+      background: #1c2128;
+    }
+    .q-btn:hover::before { opacity: 1; }
+    .q-btn:active {
+      transform: translateY(0) scale(0.99);
+    }
+
+    /* Question Content */
+    .q-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .q-number {
+      background: rgba(88,166,255,0.15);
+      color: #58a6ff;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    .q-btn:hover .q-number {
+      background: #58a6ff;
+      color: #fff;
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 0 15px rgba(88,166,255,0.4);
+    }
+
+    .q-text {
+      font-size: 1.05rem;
+      font-weight: 500;
+      line-height: 1.4;
+      color: #e6edf3;
+    }
+
+    /* Arrow on the right */
+    .q-arrow {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      transition: all 0.25s ease;
+      margin-left: 1rem;
+    }
+    .q-btn:hover .q-arrow {
+      color: #58a6ff;
+      transform: translateX(5px);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+      font-style: italic;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 1rem; }
+      .q-btn { padding: 1rem; }
+      .q-number { width: 35px; height: 35px; font-size: 1rem; }
+      .q-text { font-size: 0.95rem; }
+      .page-title { font-size: 1.5rem; }
+    }
+  </style>
 </head>
 <body>
   <header>
-    <a href="/" style="color:#c9d1d9; text-decoration:none; font-weight:600;">← Back to Home</a>
-    <nav><a href="/admin">🛠️ Admin</a></nav>
+    <a href="/" style="color:#c9d1d9; text-decoration:none; font-weight:600; font-size:1.2rem;">← Back to Home</a>
+    <nav>
+      <a href="/admin">🛠️ Admin</a>
+    </nav>
   </header>
-  <main style="max-width: 800px;">
-    <h1 id="week-title" style="text-align: center; margin-bottom: 2rem;">Loading...</h1>
-    <div id="q-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+
+  <main class="main-container">
+    <h1 id="week-title" class="page-title">Loading...</h1>
+    <div id="q-list" class="q-list">
+      <!-- Questions will be injected here -->
+    </div>
   </main>
+
   <script>
     const weekId = {{ week_id }};
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
     fetch('/api/weeks/' + weekId).then(r => r.json()).then(w => {
-      document.getElementById('week-title').textContent = w.name;
+      // Update Title with appropriate emoji
+      const titleEl = document.getElementById('week-title');
+      const isProject = w.name.toLowerCase().includes('project');
+      titleEl.innerHTML = `<span class="emoji">${isProject ? '📦' : '📅'}</span> ${escapeHtml(w.name)}`;
+
       const list = document.getElementById('q-list');
-      
+      list.innerHTML = '';
+
       if (!w.questions.length) {
-        list.innerHTML = '<p style="text-align:center; color:#8b949e;">No questions in this week yet.</p>';
+        list.innerHTML = '<div class="empty-state">No questions in this week yet. Check back later! 🚀</div>';
         return;
       }
 
+      // Render each question as a button
       w.questions.forEach((q, i) => {
-        const btn = document.createElement('a');
-        btn.href = '/question/' + q.id;
-        btn.className = 'btn-3d';
-        btn.innerHTML = `
-          <span><span class="q-num">Q${i+1}</span> ${q.title}</span>
-          <span style="color:#58a6ff; font-size:1.5rem;">→</span>
+        const a = document.createElement('a');
+        a.href = '/question/' + q.id;
+        a.className = 'q-btn';
+        
+        // Truncate the text for the button display if it's too long
+        const displayText = q.title.length > 120 ? q.title.substring(0, 120) + '...' : q.title;
+
+        a.innerHTML = `
+          <div class="q-content">
+            <div class="q-number">${i + 1}</div>
+            <div class="q-text">${escapeHtml(displayText)}</div>
+          </div>
+          <div class="q-arrow">→</div>
         `;
-        list.appendChild(btn);
+        list.appendChild(a);
       });
     });
   </script>

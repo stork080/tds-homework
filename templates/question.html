@@ -3,333 +3,73 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Question Details — TDS Hub</title>
+  <title>Question — TDS Hub</title>
+  <!-- Prism.js for Syntax Highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
   <style>
-    :root {
-      --primary: #0366d6;
-      --primary-dark: #0250a3;
-      --success: #238636;
-      --success-dark: #2ea043;
-      --bg: #0d1117;
-      --panel-bg: #161b22;
-      --border: rgba(255,255,255,.08);
-      --text: #e6edf3;
-      --text-muted: #8b949e;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
-      background-attachment: fixed;
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ===== HEADER ===== */
-    header {
-      background: rgba(13, 17, 23, 0.85);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-    }
-    header h1 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: .5rem; color: #fff; }
-    header nav { display: flex; gap: .5rem; }
-    header nav a {
-      color: #c9d1d9; text-decoration: none;
-      padding: .45rem 1rem; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.12);
-      font-size: .9rem; font-weight: 500;
-      transition: all .2s ease;
-    }
-    header nav a:hover {
-      background: rgba(88,166,255,.15);
-      border-color: #58a6ff;
-      color: #fff;
-    }
-
-    /* ===== MAIN WRAPPER ===== */
-    .main-container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1.5rem 4rem;
-      animation: fadeUp 0.4s ease;
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Question Title Box */
-    .q-header-box {
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      border-left: 4px solid #58a6ff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,.15);
-    }
-    .q-header-box h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      line-height: 1.5;
-      color: #fff;
-      font-weight: 600;
-    }
-
-    /* ===== TABS NAVIGATION ===== */
-    .tabs {
-      display: flex;
-      gap: .5rem;
-      margin-bottom: 1.5rem;
-      background: rgba(0, 0, 0, 0.3);
-      padding: .4rem;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      overflow-x: auto;
-    }
-    .tab {
-      flex: 1;
-      padding: .8rem 1rem;
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid transparent;
-      border-radius: 8px;
-      font-size: .95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s ease;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .4rem;
-    }
-    .tab:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: #c9d1d9;
-    }
-    .tab.active {
-      background: var(--panel-bg);
-      color: #58a6ff;
-      box-shadow: 0 4px 10px rgba(0,0,0,.3);
-      border-color: var(--border);
-    }
-
-    /* ===== TAB CONTENT PANELS ===== */
-    .tab-panel {
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,.2);
-    }
-    .hidden { display: none !important; }
-
-    /* ===== SOLUTIONS LIST ===== */
-    .solution-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--success);
-      border-radius: 8px;
-      padding: 1.25rem;
-      margin-bottom: 1rem;
-      transition: all .2s ease;
-    }
-    .solution-card:hover {
-      border-color: var(--success-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(35,134,54,.1);
-    }
-    .sol-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: .75rem;
-      font-size: .85rem;
-      color: var(--text-muted);
-    }
-    .sol-author {
-      font-weight: 600;
-      color: #c9d1d9;
-      display: flex;
-      align-items: center;
-      gap: .3rem;
-    }
-    .sol-votes {
-      background: rgba(46,160,67,.15);
-      color: var(--success-dark);
-      padding: .2rem .6rem;
-      border-radius: 12px;
-      font-weight: 700;
-    }
-    .sol-content {
-      white-space: pre-wrap;
-      line-height: 1.6;
-      color: var(--text);
-      font-size: .95rem;
-      margin-bottom: 1rem;
-    }
-
-    /* ===== FORMS & INPUTS ===== */
-    .form-group {
-      margin-bottom: 1rem;
-    }
-    input, textarea {
-      width: 100%;
-      padding: .8rem 1rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: white;
-      font-family: inherit;
-      font-size: .95rem;
-      transition: all .2s;
-    }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #58a6ff;
-      box-shadow: 0 0 0 3px rgba(88,166,255,.15);
-    }
-    textarea { resize: vertical; min-height: 100px; }
-
-    /* ===== BUTTONS ===== */
-    button {
-      background: var(--primary); color: white; border: none;
-      padding: .7rem 1.5rem; border-radius: 8px; cursor: pointer;
-      font-size: .95rem; font-weight: 600; transition: all .2s;
-      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-    }
-    button:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(3,102,214,.4); }
-    button:active:not(:disabled) { transform: translateY(0); }
-    button:disabled { opacity: .6; cursor: not-allowed; }
-
-    button.btn-upvote {
-      background: rgba(46,160,67,.15);
-      color: var(--success-dark);
-      border: 1px solid rgba(46,160,67,.3);
-      padding: .4rem 1rem; font-size: .85rem;
-    }
-    button.btn-upvote:hover:not(:disabled) {
-      background: var(--success);
-      color: white;
-      border-color: var(--success);
-    }
-
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #fff;
-      margin: 2rem 0 1rem;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-    }
-
-    /* ===== THEORY PROSE ===== */
-    .theory-box {
-      background: var(--bg);
-      border-left: 4px solid #f59e0b;
-      padding: 1.5rem;
-      border-radius: 0 8px 8px 0;
-      margin-bottom: 2rem;
-      line-height: 1.7;
-      color: #c9d1d9;
-      white-space: pre-wrap;
-    }
-    .theory-box.conclusion {
-      border-left-color: #8b5cf6;
-    }
-    .placeholder-text {
-      color: var(--text-muted);
-      font-style: italic;
-    }
-
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: var(--text-muted);
-      font-style: italic;
-      background: rgba(255,255,255,.02);
-      border: 2px dashed var(--border);
-      border-radius: 8px;
-    }
-
-    @media (max-width: 640px) {
-      .tabs { flex-direction: column; }
-      .tab { justify-content: flex-start; }
-      .main-container { padding: 1rem; }
-    }
+    /* [Keep all your existing CSS here from the previous question.html] */
+    /* ... Paste the :root, body, header, .q-header-box, .tabs, .tab-panel, .section-title, .theory-box, inputs, buttons CSS ... */
+    
+    /* NEW STYLES */
+    .sort-bar { display: flex; justify-content: flex-end; margin-bottom: 1rem; gap: .5rem; }
+    .sort-bar select { padding: .4rem .8rem; background: var(--bg); color: white; border: 1px solid var(--border); border-radius: 6px; }
+    
+    .sol-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .75rem; }
+    .author-info { display: flex; align-items: center; gap: .5rem; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: .8rem; background: #58a6ff; }
+    .flag-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: .2rem; transition: color .2s; }
+    .flag-btn:hover { color: #f85149; }
+    
+    /* Code block styling */
+    .sol-content pre { margin: 0; border-radius: 8px; }
+    .copy-btn { background: #21262d; color: #c9d1d9; border: 1px solid var(--border); padding: .3rem .6rem; border-radius: 4px; font-size: .75rem; cursor: pointer; margin-top: .5rem; }
+    .copy-btn:hover { background: #30363d; }
   </style>
 </head>
 <body>
-  <header>
-    <a href="/" style="color:#c9d1d9; text-decoration:none; font-weight:600; font-size:1.1rem;">← Back to Home</a>
-    <nav>
-      <a href="/admin">🛠️ Admin</a>
-    </nav>
-  </header>
-
-  <main class="main-container">
-    <!-- Question Title Header -->
-    <div class="q-header-box">
-      <h1 id="q-title">Loading question...</h1>
-    </div>
-
-    <!-- Tabs Navigation -->
-    <div class="tabs">
-      <button class="tab active" data-tab="steps">🪜 Steps</button>
-      <button class="tab" data-tab="short_theory">📘 Short Theory</button>
-      <button class="tab" data-tab="full">📖 Full Theory</button>
-    </div>
+  <!-- [Keep the Header and Main container here] -->
+  <!-- ... Paste the header, q-header-box, and tabs here ... -->
 
     <!-- Tab 1: Steps -->
     <section id="tab-steps" class="tab-panel">
+      <div class="sort-bar">
+        <select id="sort-steps" onchange="loadSolutions('steps')">
+          <option value="top">🔥 Most Upvoted</option>
+          <option value="new">🕒 Newest First</option>
+          <option value="old">⏳ Oldest First</option>
+        </select>
+      </div>
       <div id="steps-list"></div>
-      
-      <div class="section-title">➕ Add your solution</div>
-      <div class="form-group">
-        <input id="steps-name" placeholder="Your name (optional)">
-      </div>
-      <div class="form-group">
-        <textarea id="steps-content" placeholder="Write the step-by-step solution here..."></textarea>
-      </div>
-      <button onclick="submitSolution('steps', this)">Submit Solution</button>
+      <!-- [Keep the form here] -->
     </section>
 
     <!-- Tab 2: Short Theory -->
     <section id="tab-short_theory" class="tab-panel hidden">
+      <div class="sort-bar">
+        <select id="sort-short" onchange="loadSolutions('short_theory')">
+          <option value="top">🔥 Most Upvoted</option>
+          <option value="new">🕒 Newest First</option>
+          <option value="old">⏳ Oldest First</option>
+        </select>
+      </div>
       <div id="short-list"></div>
+      <!-- [Keep the form here] -->
       
-      <div class="section-title">➕ Add short theory</div>
-      <div class="form-group">
-        <input id="short-name" placeholder="Your name (optional)">
-      </div>
-      <div class="form-group">
-        <textarea id="short-content" placeholder="Write the concise theory needed for this question..."></textarea>
-      </div>
-      <button onclick="submitSolution('short_theory', this)">Submit Theory</button>
+      <div class="section-title" style="color: #a78bfa; margin-top: 3rem;">🎯 User Conclusions</div>
+      <div id="conclusion-list"></div>
+      <!-- [Keep the conclusion form here] -->
     </section>
 
     <!-- Tab 3: Full Theory -->
-    <section id="tab-full" class="tab-panel hidden">
-      <div class="section-title">📖 Full Prerequisite Theory</div>
-      <div id="full-theory" class="theory-box"></div>
+    <!-- [Keep the Full Theory section] -->
 
-      <div class="section-title">🎯 Conclusion</div>
-      <div id="conclusion" class="theory-box conclusion"></div>
-    </section>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  
   <script>
     const qid = {{ qid }};
     const voterId = (() => {
@@ -338,134 +78,138 @@
       return id;
     })();
 
-    function escapeHtml(s) {
-      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    function escapeHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    
+    // Generate consistent color from string
+    function stringToColor(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+      return '#' + '00000'.substring(0, 6 - c.length) + c;
     }
 
-    // Load Question Details
+    // Format content: Extract code blocks if surrounded by ``` and apply Prism
+    function formatContent(text) {
+      const parts = text.split(/(```[\s\S]*?```)/g);
+      return parts.map(part => {
+        if (part.startsWith('```')) {
+          const match = part.match(/```(\w*)\n([\s\S]*?)```/);
+          const lang = match && match[1] ? match[1] : 'python';
+          const code = match ? match[2] : part.replace(/```/g, '');
+          return `<pre><code class="language-${lang}">${escapeHtml(code)}</code></pre><button class="copy-btn" onclick="copyCode(this)">📋 Copy Code</button>`;
+        }
+        return `<div style="white-space:pre-wrap;">${escapeHtml(part)}</div>`;
+      }).join('');
+    }
+
+    function copyCode(btn) {
+      const code = btn.previousElementSibling.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const orig = btn.textContent; btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = orig, 2000);
+      });
+    }
+
     fetch('/api/questions/' + qid).then(r => r.json()).then(q => {
       document.getElementById('q-title').textContent = q.title;
-      
-      const ft = document.getElementById('full-theory');
-      const cc = document.getElementById('conclusion');
-      
-      if (q.full_theory) {
-        ft.textContent = q.full_theory;
-      } else {
-        ft.innerHTML = '<span class="placeholder-text">Not added yet. Check back soon.</span>';
-      }
-      
-      if (q.conclusion) {
-        cc.textContent = q.conclusion;
-      } else {
-        cc.innerHTML = '<span class="placeholder-text">Not added yet. Check back soon.</span>';
-      }
+      document.getElementById('full-theory').innerHTML = q.full_theory ? escapeHtml(q.full_theory) : '<span class="placeholder-text">Not added yet.</span>';
+      document.getElementById('conclusion').innerHTML = q.conclusion ? escapeHtml(q.conclusion) : '<span class="placeholder-text">Not added yet.</span>';
     });
 
-    // Load Solutions
     function loadSolutions(type) {
-      fetch(`/api/solutions/${qid}?type=${type}`).then(r => r.json()).then(list => {
-        const box = document.getElementById(type === 'steps' ? 'steps-list' : 'short-list');
+      const sortVal = document.getElementById(type === 'steps' ? 'sort-steps' : (type === 'short_theory' ? 'sort-short' : 'top'))?.value || 'top';
+      fetch(`/api/solutions/${qid}?type=${type}&sort=${sortVal}`).then(r => r.json()).then(list => {
+        let boxId = type === 'steps' ? 'steps-list' : (type === 'short_theory' ? 'short-list' : 'conclusion-list');
+        const box = document.getElementById(boxId);
         box.innerHTML = '';
         
         if (!list.length) {
-          box.innerHTML = '<div class="empty-state">No submissions yet. Be the first to add one! 🚀</div>';
+          box.innerHTML = `<div class="empty-state">No ${type.replace('_', ' ')} submissions yet. Be the first! 🚀</div>`;
           return;
         }
         
         list.forEach(s => {
+          const initial = s.user_name.charAt(0).toUpperCase();
+          const color = stringToColor(s.user_name);
           const div = document.createElement('div');
-          div.className = 'solution-card';
+          div.className = 'solution-card' + (type === 'conclusion' ? ' conclusion-card' : '');
           div.innerHTML = `
             <div class="sol-header">
-              <div class="sol-author">👤 ${escapeHtml(s.user_name)}</div>
-              <div class="sol-votes" id="vote-count-${s.id}">👍 ${s.votes} Votes</div>
+              <div class="author-info">
+                <div class="avatar" style="background:${color}">${initial}</div>
+                <span class="sol-author">${escapeHtml(s.user_name)}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:.5rem;">
+                <div class="sol-votes" id="vote-count-${s.id}">👍 ${s.votes}</div>
+                <button class="flag-btn" onclick="flagSolution(${s.id}, this)" title="Report Spam">⚠️</button>
+              </div>
             </div>
-            <div class="sol-content">${escapeHtml(s.content)}</div>
+            <div class="sol-content">${formatContent(s.content)}</div>
             <button class="btn-upvote" onclick="upvote(${s.id}, this)">👍 Upvote</button>
           `;
           box.appendChild(div);
         });
+        Prism.highlightAll(); // Re-run syntax highlighting
       });
     }
 
-    // Handle Upvote
+    function flagSolution(sid, btn) {
+      if (!confirm('Report this solution as spam or inappropriate?')) return;
+      fetch('/api/flag/' + sid, { method: 'POST' }).then(() => {
+        btn.style.display = 'none';
+        alert('Reported. An admin will review this.');
+      });
+    }
+
     function upvote(sid, btn) {
-      const original = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '⏳ Voting...';
-      
+      btn.disabled = true; btn.innerHTML = '⏳';
       fetch('/api/upvote/' + sid, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({voter_id: voterId})
       }).then(r => r.json()).then(d => {
         if (d.votes !== undefined) {
           btn.innerHTML = '✅ Voted';
-          // Update the vote count badge in the header of the card
-          const countEl = document.getElementById('vote-count-' + sid);
-          if (countEl) countEl.textContent = `👍 ${d.votes} Votes`;
+          document.getElementById('vote-count-' + sid).textContent = `👍 ${d.votes}`;
         } else {
-          btn.innerHTML = '⚠️ ' + (d.error || 'Failed');
-          setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+          btn.innerHTML = '⚠️'; setTimeout(() => { btn.innerHTML = '👍 Upvote'; btn.disabled = false; }, 2000);
         }
-      }).catch(() => {
-        btn.innerHTML = original;
-        btn.disabled = false;
       });
     }
 
-    // Handle Submission
     function submitSolution(type, btn) {
-      const nameEl = document.getElementById(type === 'steps' ? 'steps-name' : 'short-name');
-      const contEl = document.getElementById(type === 'steps' ? 'steps-content' : 'short-content');
-      const content = contEl.value.trim();
+      let nameId = type === 'steps' ? 'steps-name' : (type === 'short_theory' ? 'short-name' : 'conclusion-name');
+      let contentId = type === 'steps' ? 'steps-content' : (type === 'short_theory' ? 'short-content' : 'conclusion-content');
       
-      if (!content) return alert('Please write something first.');
-      
-      const original = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '⏳ Submitting...';
-      
+      const nameVal = document.getElementById(nameId).value.trim() || 'anonymous';
+      const contentVal = document.getElementById(contentId).value.trim();
+      if (!contentVal) return alert('Content required');
+
+      btn.disabled = true; btn.innerHTML = '⏳ Submitting...';
       fetch('/api/solutions', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({question_id: qid, type, content, user_name: nameEl.value.trim()})
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question_id: qid, type, content: contentVal, user_name: nameVal})
       }).then(r => r.json()).then(d => {
-        btn.innerHTML = original; 
-        btn.disabled = false;
-        
-        if (d.id) { 
-          contEl.value = ''; 
-          nameEl.value = ''; 
-          loadSolutions(type); 
-        } else {
-          alert(d.error || 'Failed to submit.');
+        btn.innerHTML = 'Submit'; btn.disabled = false;
+        if (d.id) {
+          document.getElementById(contentId).value = '';
+          document.getElementById(nameId).value = '';
+          loadSolutions(type);
         }
-      }).catch(() => {
-        btn.innerHTML = original;
-        btn.disabled = false;
       });
     }
 
-    // Tab Switching Logic
     document.querySelectorAll('.tab').forEach(btn => {
       btn.onclick = () => {
-        // Update active tab styling
         document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-        
         btn.classList.add('active');
         const tab = btn.dataset.tab;
         document.getElementById('tab-' + tab).classList.remove('hidden');
-        
-        // Load data for the newly opened tab
         if (tab === 'steps') loadSolutions('steps');
-        if (tab === 'short_theory') loadSolutions('short_theory');
+        if (tab === 'short_theory') { loadSolutions('short_theory'); loadSolutions('conclusion'); }
       };
     });
 
-    // Initial Load
     loadSolutions('steps');
   </script>
 </body>

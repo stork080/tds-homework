@@ -3,44 +3,330 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Question</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <title>Question Details — TDS Hub</title>
+  <style>
+    :root {
+      --primary: #0366d6;
+      --primary-dark: #0250a3;
+      --success: #238636;
+      --success-dark: #2ea043;
+      --bg: #0d1117;
+      --panel-bg: #161b22;
+      --border: rgba(255,255,255,.08);
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    header h1 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: .5rem; color: #fff; }
+    header nav { display: flex; gap: .5rem; }
+    header nav a {
+      color: #c9d1d9; text-decoration: none;
+      padding: .45rem 1rem; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: .9rem; font-weight: 500;
+      transition: all .2s ease;
+    }
+    header nav a:hover {
+      background: rgba(88,166,255,.15);
+      border-color: #58a6ff;
+      color: #fff;
+    }
+
+    /* ===== MAIN WRAPPER ===== */
+    .main-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+      animation: fadeUp 0.4s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Question Title Box */
+    .q-header-box {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid #58a6ff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .q-header-box h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      line-height: 1.5;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ===== TABS NAVIGATION ===== */
+    .tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: .4rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab {
+      flex: 1;
+      padding: .8rem 1rem;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+    }
+    .tab:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #c9d1d9;
+    }
+    .tab.active {
+      background: var(--panel-bg);
+      color: #58a6ff;
+      box-shadow: 0 4px 10px rgba(0,0,0,.3);
+      border-color: var(--border);
+    }
+
+    /* ===== TAB CONTENT PANELS ===== */
+    .tab-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    }
+    .hidden { display: none !important; }
+
+    /* ===== SOLUTIONS LIST ===== */
+    .solution-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--success);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: all .2s ease;
+    }
+    .solution-card:hover {
+      border-color: var(--success-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(35,134,54,.1);
+    }
+    .sol-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .75rem;
+      font-size: .85rem;
+      color: var(--text-muted);
+    }
+    .sol-author {
+      font-weight: 600;
+      color: #c9d1d9;
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+    }
+    .sol-votes {
+      background: rgba(46,160,67,.15);
+      color: var(--success-dark);
+      padding: .2rem .6rem;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+    .sol-content {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      color: var(--text);
+      font-size: .95rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ===== FORMS & INPUTS ===== */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: .8rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: white;
+      font-family: inherit;
+      font-size: .95rem;
+      transition: all .2s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 3px rgba(88,166,255,.15);
+    }
+    textarea { resize: vertical; min-height: 100px; }
+
+    /* ===== BUTTONS ===== */
+    button {
+      background: var(--primary); color: white; border: none;
+      padding: .7rem 1.5rem; border-radius: 8px; cursor: pointer;
+      font-size: .95rem; font-weight: 600; transition: all .2s;
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    }
+    button:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(3,102,214,.4); }
+    button:active:not(:disabled) { transform: translateY(0); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+
+    button.btn-upvote {
+      background: rgba(46,160,67,.15);
+      color: var(--success-dark);
+      border: 1px solid rgba(46,160,67,.3);
+      padding: .4rem 1rem; font-size: .85rem;
+    }
+    button.btn-upvote:hover:not(:disabled) {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 2rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    /* ===== THEORY PROSE ===== */
+    .theory-box {
+      background: var(--bg);
+      border-left: 4px solid #f59e0b;
+      padding: 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 2rem;
+      line-height: 1.7;
+      color: #c9d1d9;
+      white-space: pre-wrap;
+    }
+    .theory-box.conclusion {
+      border-left-color: #8b5cf6;
+    }
+    .placeholder-text {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-style: italic;
+      background: rgba(255,255,255,.02);
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .tabs { flex-direction: column; }
+      .tab { justify-content: flex-start; }
+      .main-container { padding: 1rem; }
+    }
+  </style>
 </head>
 <body>
   <header>
-    <a href="/" style="color:#c9d1d9; text-decoration:none; font-weight:600;">← Home</a>
-    <nav><a href="/admin">🛠️ Admin</a></nav>
+    <a href="/" style="color:#c9d1d9; text-decoration:none; font-weight:600; font-size:1.1rem;">← Back to Home</a>
+    <nav>
+      <a href="/admin">🛠️ Admin</a>
+    </nav>
   </header>
-  <main style="max-width: 850px;">
-    <h1 id="q-title">Loading...</h1>
 
+  <main class="main-container">
+    <!-- Question Title Header -->
+    <div class="q-header-box">
+      <h1 id="q-title">Loading question...</h1>
+    </div>
+
+    <!-- Tabs Navigation -->
     <div class="tabs">
       <button class="tab active" data-tab="steps">🪜 Steps</button>
       <button class="tab" data-tab="short_theory">📘 Short Theory</button>
       <button class="tab" data-tab="full">📖 Full Theory</button>
     </div>
 
+    <!-- Tab 1: Steps -->
     <section id="tab-steps" class="tab-panel">
       <div id="steps-list"></div>
-      <h3 style="margin-top:2rem; font-size:1.1rem;">Add your solution</h3>
-      <input id="steps-name" placeholder="Your name (optional)">
-      <textarea id="steps-content" rows="3" placeholder="Write the steps..."></textarea>
-      <button onclick="submitSolution('steps', this)" class="btn-submit">Submit Solution</button>
+      
+      <div class="section-title">➕ Add your solution</div>
+      <div class="form-group">
+        <input id="steps-name" placeholder="Your name (optional)">
+      </div>
+      <div class="form-group">
+        <textarea id="steps-content" placeholder="Write the step-by-step solution here..."></textarea>
+      </div>
+      <button onclick="submitSolution('steps', this)">Submit Solution</button>
     </section>
 
+    <!-- Tab 2: Short Theory -->
     <section id="tab-short_theory" class="tab-panel hidden">
       <div id="short-list"></div>
-      <h3 style="margin-top:2rem; font-size:1.1rem;">Add short theory</h3>
-      <input id="short-name" placeholder="Your name (optional)">
-      <textarea id="short-content" rows="3" placeholder="Concise theory..."></textarea>
-      <button onclick="submitSolution('short_theory', this)" class="btn-submit">Submit Theory</button>
+      
+      <div class="section-title">➕ Add short theory</div>
+      <div class="form-group">
+        <input id="short-name" placeholder="Your name (optional)">
+      </div>
+      <div class="form-group">
+        <textarea id="short-content" placeholder="Write the concise theory needed for this question..."></textarea>
+      </div>
+      <button onclick="submitSolution('short_theory', this)">Submit Theory</button>
     </section>
 
+    <!-- Tab 3: Full Theory -->
     <section id="tab-full" class="tab-panel hidden">
-      <h2 style="margin-top:0; border:none; color:#f59e0b;">Full Prerequisite Theory</h2>
-      <p id="full-theory" style="line-height:1.7; color:#c9d1d9; margin-bottom: 2rem;"></p>
-      <h2 style="border:none; color:#f59e0b;">Conclusion</h2>
-      <p id="conclusion" style="line-height:1.7; color:#c9d1d9;"></p>
+      <div class="section-title">📖 Full Prerequisite Theory</div>
+      <div id="full-theory" class="theory-box"></div>
+
+      <div class="section-title">🎯 Conclusion</div>
+      <div id="conclusion" class="theory-box conclusion"></div>
     </section>
   </main>
 
@@ -52,86 +338,134 @@
       return id;
     })();
 
-    fetch('/api/questions/' + qid).then(r => r.json()).then(q => {
-      document.getElementById('q-title').textContent = q.title;
-      document.getElementById('full-theory').textContent = q.full_theory || 'Not yet added.';
-      document.getElementById('conclusion').textContent = q.conclusion || 'Not yet added.';
-    });
-
     function escapeHtml(s) {
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    // Load Question Details
+    fetch('/api/questions/' + qid).then(r => r.json()).then(q => {
+      document.getElementById('q-title').textContent = q.title;
+      
+      const ft = document.getElementById('full-theory');
+      const cc = document.getElementById('conclusion');
+      
+      if (q.full_theory) {
+        ft.textContent = q.full_theory;
+      } else {
+        ft.innerHTML = '<span class="placeholder-text">Not added yet. Check back soon.</span>';
+      }
+      
+      if (q.conclusion) {
+        cc.textContent = q.conclusion;
+      } else {
+        cc.innerHTML = '<span class="placeholder-text">Not added yet. Check back soon.</span>';
+      }
+    });
+
+    // Load Solutions
     function loadSolutions(type) {
       fetch(`/api/solutions/${qid}?type=${type}`).then(r => r.json()).then(list => {
         const box = document.getElementById(type === 'steps' ? 'steps-list' : 'short-list');
         box.innerHTML = '';
+        
         if (!list.length) {
-          box.innerHTML = '<p style="color:#8b949e; font-style:italic;">No submissions yet. Be the first!</p>';
+          box.innerHTML = '<div class="empty-state">No submissions yet. Be the first to add one! 🚀</div>';
           return;
         }
+        
         list.forEach(s => {
           const div = document.createElement('div');
-          div.className = 'solution';
+          div.className = 'solution-card';
           div.innerHTML = `
-            <div class="sol-head">
-              <strong>👤 ${escapeHtml(s.user_name)}</strong>
-              <span>👍 ${s.votes} votes</span>
+            <div class="sol-header">
+              <div class="sol-author">👤 ${escapeHtml(s.user_name)}</div>
+              <div class="sol-votes" id="vote-count-${s.id}">👍 ${s.votes} Votes</div>
             </div>
-            <pre>${escapeHtml(s.content)}</pre>
-            <button class="btn-upvote" onclick="upvote(${s.id}, this)">Upvote</button>
+            <div class="sol-content">${escapeHtml(s.content)}</div>
+            <button class="btn-upvote" onclick="upvote(${s.id}, this)">👍 Upvote</button>
           `;
           box.appendChild(div);
         });
       });
     }
 
+    // Handle Upvote
     function upvote(sid, btn) {
-      btn.disabled = true; btn.textContent = 'Voting...';
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Voting...';
+      
       fetch('/api/upvote/' + sid, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({voter_id: voterId})
       }).then(r => r.json()).then(d => {
         if (d.votes !== undefined) {
-          btn.textContent = '✅ Voted';
+          btn.innerHTML = '✅ Voted';
+          // Update the vote count badge in the header of the card
+          const countEl = document.getElementById('vote-count-' + sid);
+          if (countEl) countEl.textContent = `👍 ${d.votes} Votes`;
         } else {
-          btn.textContent = '⚠️ ' + (d.error || 'Error');
-          setTimeout(() => { btn.textContent = 'Upvote'; btn.disabled = false; }, 2000);
+          btn.innerHTML = '⚠️ ' + (d.error || 'Failed');
+          setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
         }
+      }).catch(() => {
+        btn.innerHTML = original;
+        btn.disabled = false;
       });
     }
 
+    // Handle Submission
     function submitSolution(type, btn) {
       const nameEl = document.getElementById(type === 'steps' ? 'steps-name' : 'short-name');
       const contEl = document.getElementById(type === 'steps' ? 'steps-content' : 'short-content');
-      if (!contEl.value.trim()) return alert('Content required');
+      const content = contEl.value.trim();
       
-      const orig = btn.textContent;
-      btn.disabled = true; btn.textContent = 'Submitting...';
+      if (!content) return alert('Please write something first.');
+      
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Submitting...';
       
       fetch('/api/solutions', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({question_id: qid, type, content: contEl.value.trim(), user_name: nameEl.value.trim()})
+        body: JSON.stringify({question_id: qid, type, content, user_name: nameEl.value.trim()})
       }).then(r => r.json()).then(d => {
-        btn.textContent = orig; btn.disabled = false;
-        if (d.id) { contEl.value = ''; nameEl.value = ''; loadSolutions(type); }
+        btn.innerHTML = original; 
+        btn.disabled = false;
+        
+        if (d.id) { 
+          contEl.value = ''; 
+          nameEl.value = ''; 
+          loadSolutions(type); 
+        } else {
+          alert(d.error || 'Failed to submit.');
+        }
+      }).catch(() => {
+        btn.innerHTML = original;
+        btn.disabled = false;
       });
     }
 
+    // Tab Switching Logic
     document.querySelectorAll('.tab').forEach(btn => {
       btn.onclick = () => {
+        // Update active tab styling
         document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        
         btn.classList.add('active');
         const tab = btn.dataset.tab;
         document.getElementById('tab-' + tab).classList.remove('hidden');
+        
+        // Load data for the newly opened tab
         if (tab === 'steps') loadSolutions('steps');
         if (tab === 'short_theory') loadSolutions('short_theory');
       };
     });
 
+    // Initial Load
     loadSolutions('steps');
   </script>
 </body>

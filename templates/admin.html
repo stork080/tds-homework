@@ -26,6 +26,32 @@
       min-height: 100vh;
     }
 
+    /* ===== FLOATING TOAST MESSAGES ===== */
+    .msg { 
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      padding: 1rem 2rem; 
+      border-radius: 30px; 
+      font-weight: 600;
+      font-size: 1.05rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .msg.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .msg.ok { background: #238636; color: white; border: 1px solid #2ea043; }
+    .msg.err { background: #da3633; color: white; border: 1px solid #f85149; }
+
     /* ===== HEADER ===== */
     header {
       background: rgba(13, 17, 23, 0.85);
@@ -123,7 +149,11 @@
       outline: none; border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,.15);
     }
     .row input, .row select { flex: 1; min-width: 130px; }
-    .row textarea { flex: 1 1 100%; min-height: 120px; font-family: ui-monospace, monospace; font-size: .9rem; resize: vertical; }
+    .row textarea { flex: 1 1 100%; font-family: ui-monospace, monospace; font-size: .9rem; resize: vertical; }
+    
+    /* Specific heights for different textareas */
+    #q-title { min-height: 60px; }
+    #edit-theory, #edit-conclusion { min-height: 120px; }
 
     /* ===== ITEMS / LISTS ===== */
     .item {
@@ -150,12 +180,6 @@
     .empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-style: italic; border: 2px dashed var(--border); border-radius: 8px; background: rgba(255,255,255,.02); }
     .helper-text { font-size: .85rem; color: var(--text-muted); margin-bottom: 1rem; }
 
-    /* ===== TOAST MESSAGES ===== */
-    .msg { padding: .85rem 1rem; border-radius: 8px; margin-bottom: 1rem; display: none; font-weight: 500; animation: slideDown .25s ease; }
-    .msg.ok { background: rgba(40,167,69,.15); color: #3fb950; border: 1px solid rgba(40,167,69,.3); display: block; }
-    .msg.err { background: rgba(215,58,73,.15); color: #f85149; border: 1px solid rgba(215,58,73,.3); display: block; }
-    @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
     .hidden { display: none !important; }
     
     /* ===== SPINNER ===== */
@@ -175,6 +199,9 @@
   </style>
 </head>
 <body>
+  <!-- Floating Toast Notification -->
+  <div id="msg" class="msg"></div>
+
   <header>
     <h1>🛠️ Admin Dashboard</h1>
     <nav>
@@ -195,8 +222,7 @@
 
   <!-- Dashboard -->
   <div id="dashboard" class="admin-wrap hidden">
-    <div id="msg" class="msg"></div>
-
+    
     <!-- Weeks Panel -->
     <div class="panel">
       <h2>📅 Weeks & Projects <span class="count" id="week-count">0</span></h2>
@@ -225,8 +251,11 @@
 
       <div id="add-q-wrapper" class="hidden" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
         <div class="row">
-          <input id="q-title" placeholder="Enter new question title..." onkeydown="if(event.key==='Enter')createQuestion()">
-          <input id="q-order" type="number" placeholder="Order" style="max-width:110px;">
+          <!-- Changed to Textarea for long questions -->
+          <textarea id="q-title" placeholder="Paste or type the full question text here..." rows="3"></textarea>
+        </div>
+        <div class="row">
+          <input id="q-order" type="number" placeholder="Order (optional)" style="max-width:150px;">
           <button onclick="createQuestion(this)" id="add-q-btn">➕ Add Question</button>
         </div>
       </div>
@@ -244,7 +273,7 @@
       </div>
       <div id="edit-area" class="hidden" style="margin-top:1rem;">
         <div class="row">
-          <input id="edit-title" placeholder="Question title" style="width:100%;">
+          <textarea id="edit-title" placeholder="Question title" style="min-height: 60px;"></textarea>
         </div>
         <div class="row">
           <textarea id="edit-theory" placeholder="Full prerequisite theory..."></textarea>
@@ -270,12 +299,16 @@
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    // Floating Pop-up Message
     function showMsg(text, ok = true) {
       const el = $('msg');
       el.textContent = text;
-      el.className = 'msg ' + (ok ? 'ok' : 'err');
+      el.className = 'msg show ' + (ok ? 'ok' : 'err');
+      
       clearTimeout(el._timer);
-      el._timer = setTimeout(() => { el.style.display = 'none'; }, 3500);
+      el._timer = setTimeout(() => { 
+        el.classList.remove('show'); 
+      }, 3000); 
     }
 
     function setLoading(btn, loading) {
@@ -377,7 +410,6 @@
         allWeeks.map(w => `<option value="${w.id}">${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)}</option>`).join('');
       $('q-week').innerHTML = opts;
       
-      // If a week was previously selected, keep it selected and reload questions
       const currentVal = $('q-week').value;
       if (currentVal) {
         $('q-week').value = currentVal;
@@ -424,7 +456,6 @@
       const weekId = parseInt($('q-week').value);
       const list = $('question-list');
       
-      // Show the Add Question form ONLY if a week is selected
       if (!weekId) {
         $('add-q-wrapper').classList.add('hidden');
         list.innerHTML = '';
@@ -448,7 +479,7 @@
           div.className = 'item';
           div.innerHTML = `
             <div class="item-info">
-              <div class="item-title">${i + 1}. ${escapeHtml(q.title)}</div>
+              <div class="item-title" title="${escapeHtml(q.title)}">${i + 1}. ${escapeHtml(q.title)}</div>
             </div>
             <div class="item-actions">
               <a href="/question/${q.id}" target="_blank" style="background:var(--panel-bg);color:white;border:1px solid var(--border);text-decoration:none;padding:.3rem .7rem;border-radius:6px;font-size:.82rem;">👁️ View</a>
@@ -466,7 +497,9 @@
         const r = await fetch('/api/weeks/' + w.id);
         const d = await r.json();
         d.questions.forEach(q => {
-          opts.push(`<option value="${q.id}">${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)} → ${escapeHtml(q.title)}</option>`);
+          // Truncate long titles in the dropdown for readability
+          const shortTitle = q.title.length > 50 ? q.title.substring(0, 50) + '...' : q.title;
+          opts.push(`<option value="${q.id}">${w.is_project ? '📦' : '📅'} ${escapeHtml(w.name)} → ${escapeHtml(shortTitle)}</option>`);
         });
       }
       $('edit-q-select').innerHTML = '<option value="">-- Select a question --</option>' + opts.join('');
@@ -476,17 +509,19 @@
       const weekId = parseInt($('q-week').value);
       const title = $('q-title').value.trim();
       const order = parseInt($('q-order').value) || 0;
+      
       if (!weekId) return showMsg('Select a week first', false);
-      if (!title) return showMsg('Title required', false);
+      if (!title) return showMsg('Question text required', false);
+      
       setLoading(btn, true);
       try {
         const res = await api('/api/admin/question', { method: 'POST', body: {week_id: weekId, title, order} });
         if (res.ok) {
           $('q-title').value = '';
           $('q-order').value = '';
-          showMsg(`✅ Question "${title}" created`);
+          showMsg(`✅ Question added successfully!`);
           await loadQuestions();
-        } else showMsg('Failed to create', false);
+        } else showMsg('Failed to create. Is the database column Text?', false);
       } finally {
         setLoading(btn, false);
       }
